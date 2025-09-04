@@ -11,7 +11,7 @@
       --card:#232323;
       --accent:#FF0072;
       --muted:#bfc3c6;
-      --glass: rgba(255,255,255,0.03);
+      --glass: rgba(255,255,255,0.03);s
     }
     *{box-sizing:border-box;margin:0;padding:0}
     body{
@@ -107,9 +107,9 @@
           <div class="price">IDR ${numberWithSeparators(p.price)}</div>
           <ul class="list">${(p.features||[]).map(f=>`<li>${escapeHtml(f)}</li>`).join('')}</ul>
           <div>
-            <span class="badge">Aksen</span>
-            <span class="badge">Harga fix</span>
-            <span class="badge">Satu CTA</span>
+            <span class="badge">Anti konten Judol</span>
+            <span class="badge">Anti konten Porn</span>
+            <span class="badge">Anti konten kekerasan</span>
           </div>
           <div class="cta">
             <a class="btn" href="./order/${encodeURIComponent(p.id)}/">Order</a>
