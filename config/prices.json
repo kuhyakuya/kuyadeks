@@ -19,7 +19,7 @@
       "durationText": "1–5 menit",
       "overRatePerMin": 5000,
       "leadTime": "0–2 hari",
-      "workloadPerMin": 12000,
+      "workloadPerMin": 0.5,
       "features": [
         "cut basic",
         "overlay sederhana",
@@ -32,7 +32,7 @@
       "price": 50000,
       "revisions": 2,
       "durationText": "1–5 menit",
-      "overRatePerMin": 12000,
+      "overRatePerMin": 2,
       "leadTime": "1–3 hari",
       "workloadPerMin": 1,
       "features": [
@@ -50,7 +50,7 @@
       "price": 150000,
       "revisions": 3,
       "durationText": "1–5 menit",
-      "overRatePerMin": 32000,
+      "overRatePerMin": 3,
       "leadTime": "3–5 hari",
       "workloadPerMin": 3,
       "features": [
@@ -66,4 +66,5 @@
     }
   ]
 }
+
 
