@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Order — Paket 1</title>
+  <meta name="description" content="Form order paket editing. Hitung harga otomatis, generate order code, kirim ke WhatsApp." />
+  <style>
+    :root{
+      --bg:#1D1D1D; --card:#232323; --accent:#FF0072; --muted:#bfc3c6; --glass: rgba(255,255,255,0.06);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial; background:var(--bg); color:#fff; padding:24px; display:flex; justify-content:center}
+    .container{max-width:900px; width:100%}
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo img{width:40px;height:40px;border-radius:8px;object-fit:cover}
+    h1{font-size:18px}
+    p.lead{color:var(--muted);font-size:13px}
+
+    .grid{display:grid;grid-template-columns: 1.2fr 1fr; gap:16px}
+    @media (max-width:800px){.grid{grid-template-columns:1fr}}
+
+    .card{background:var(--card);border-radius:12px;padding:16px;border:1px solid rgba(255,255,255,0.05);box-shadow:0 6px 18px rgba(0,0,0,0.4)}
+    .card h2{font-size:16px;margin-bottom:10px}
+
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input[type="number"], input[type="url"], textarea{width:100%;background:#1f1f1f;border:1px solid rgba(255,255,255,0.08);color:#fff;border-radius:10px;padding:10px;font-size:14px}
+    input[type="number"]{appearance:textfield}
+    textarea{min-height:120px;resize:vertical}
+
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width:560px){.row{grid-template-columns:1fr}}
+
+    .helper{font-size:12px;color:var(--muted);margin-top:6px}
+    .warn{color:#ffd166}
+    .err{color:#ff8080}
+
+    .summary div{display:flex;justify-content:space-between;margin:6px 0;font-size:14px}
+    .summary .total{font-weight:800;font-size:18px;margin-top:8px;border-top:1px dashed rgba(255,255,255,0.12);padding-top:8px}
+
+    .btn{background:var(--accent);color:white;padding:12px 16px;border-radius:10px;font-weight:700;cursor:pointer;text-decoration:none;border:0;display:inline-block}
+    .btn[disabled]{opacity:.4;cursor:not-allowed}
+
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:var(--glass);font-size:12px;color:#fff;margin-right:6px}
+    .muted{color:var(--muted)}
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <div class="brand">
+        <div class="logo"><img src="../../assets/Logo.png" alt="Logo"></div>
+        <div>
+          <h1>Order — Paket <span id="pkgName">#1</span></h1>
+          <p class="lead">Hitung harga otomatis • Satu tombol CTA • WhatsApp redirect</p>
+        </div>
+      </div>
+      <div class="muted" style="font-size:13px">Sumber config: <code>../../config/prices.json</code></div>
+    </header>
+
+    <section class="grid">
+      <article class="card">
+        <h2>Form Order</h2>
+        <div class="row">
+          <div>
+            <label for="durasi">Durasi total (menit) *</label>
+            <input id="durasi" type="number" min="1" step="1" placeholder="contoh: 8" required>
+            <div class="helper">Overtime dihitung di atas 5 menit.</div>
+          </div>
+          <div>
+            <label for="deadline">Deadline (hari) *</label>
+            <input id="deadline" type="number" min="1" step="1" placeholder="contoh: 3" required>
+            <div class="helper">Perhitungan dimulai <b>besok</b> 00:00 setelah <b>file RAW diterima</b>. <span class="warn">Pastikan file sudah terkirim.</span></div>
+          </div>
+        </div>
+        <div>
+          <label for="ref">Link referensi (opsional)</label>
+          <input id="ref" type="url" placeholder="https://...">
+        </div>
+        <div>
+          <label for="note">Catatan (brief) * — minimal 30 karakter</label>
+          <textarea id="note" minlength="30" placeholder="Tulis arahan jelas: bagian yang dipotong, vibe, efek, warna, contoh referensi, dsb." required></textarea>
+          <div class="helper">Contoh: "Cut menit 00:10–00:50, overlay judul besar, transisi cepat, color warm, tambahkan beat drop di menit 00:30."</div>
+          <div id="noteErr" class="helper err" style="display:none">Brief terlalu pendek. Minimal 30 karakter.</div>
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
+          <button id="btnOrder" class="btn" disabled>Order via WhatsApp</button>
+          <span id="orderCode" class="pill" title="Order Code"></span>
+        </div>
+      </article>
+
+      <aside class="card">
+        <h2>Ringkasan</h2>
+        <div class="summary">
+          <div><span>Paket</span><span id="sumPkg">-</span></div>
+          <div><span>Base price</span><span id="sumBase">IDR 0</span></div>
+          <div><span>Overtime</span><span id="sumOver">0 mnt × IDR 0 = IDR 0</span></div>
+          <div><span>Deadline surcharge</span><span id="sumSurcharge">+0% = IDR 0</span></div>
+          <div class="total"><span>Total</span><span id="sumTotal">IDR 0</span></div>
+          <div class="helper">Estimasi selesai: <b id="eta">-</b></div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    // ===== Constants & Utils =====
+    const PACKAGE_ID = (location.pathname.match(/\/order\/(\d+)/)||[])[1] ? parseInt((location.pathname.match(/\/order\/(\d+)/)||[])[1],10) : 1;
+    const CONFIG_PATH = '../../config/prices.json';
+    const RAND_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+    const fmtIDR = n => 'IDR ' + (n||0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+    function randCode(len=6){
+      // Ensure mix of letter & digit
+      let code='';
+      for(let i=0;i<len;i++){ code += RAND_CHARS[Math.floor(Math.random()*RAND_CHARS.length)]; }
+      if(!(/[A-Z]/.test(code) && /\d/.test(code))){ return randCode(len); }
+      return code;
+    }
+    function addDays(date, days){ const d=new Date(date); d.setDate(d.getDate()+days); return d; }
+    function nextDayStart(){ const d=new Date(); d.setDate(d.getDate()+1); d.setHours(0,0,0,0); return d; }
+
+    function computeSurchargePercent(days, map){
+      // map example: {"1":30, "2":15, "3":0}
+      if(!map || Object.keys(map).length===0) return 0;
+      const keys = Object.keys(map).map(Number).sort((a,b)=>a-b);
+      for(const k of keys){ if(days <= k) return Number(map[k])||0; }
+      return 0; // >= largest key
+    }
+
+    // ===== State =====
+    let pkg = null; // selected package
+    let cfg = null; // config json
+
+    // ===== Bootstrap =====
+    (async function init(){
+      const res = await fetch(CONFIG_PATH, {cache:'no-store'});
+      if(!res.ok) throw new Error('Gagal memuat config: ' + CONFIG_PATH);
+      cfg = await res.json();
+      pkg = (cfg.packages||[]).find(p => Number(p.id) === Number(PACKAGE_ID));
+      if(!pkg) throw new Error('Paket id '+PACKAGE_ID+' tidak ditemukan di config.');
+
+      // Fill header & summary
+      document.getElementById('pkgName').textContent = `${pkg.name} (p${pkg.id})`;
+      document.getElementById('sumPkg').textContent = `${pkg.name} — revisi ${pkg.revisions}`;
+      document.getElementById('sumBase').textContent = fmtIDR(pkg.price);
+
+      // Hook inputs
+      ['durasi','deadline','ref','note'].forEach(id=>{
+        document.getElementById(id).addEventListener('input', update);
+        document.getElementById(id).addEventListener('change', update);
+      });
+
+      document.getElementById('btnOrder').addEventListener('click', onOrder);
+
+      update();
+    })().catch(err=>{
+      alert('Config error: '+ err.message + '\nCek file '+CONFIG_PATH);
+      console.error(err);
+    });
+
+    // ===== Core =====
+    function update(){
+      if(!pkg) return;
+      const durasi = Math.max(1, parseInt(document.getElementById('durasi').value||0,10));
+      const days = Math.max(1, parseInt(document.getElementById('deadline').value||0,10));
+      const note = (document.getElementById('note').value||'').trim();
+      const ref = (document.getElementById('ref').value||'').trim();
+
+      // Validate note length
+      const noteErr = document.getElementById('noteErr');
+      const noteOK = note.length >= 30;
+      noteErr.style.display = noteOK ? 'none' : 'block';
+
+      // Overtime calc
+      const overMin = Math.max(0, durasi - 5);
+      const overCost = overMin * (pkg.overRatePerMin||0);
+
+      // Deadline surcharge (percent from config)
+      const surPerc = computeSurchargePercent(days, cfg.surcharge);
+      const subTotal = (pkg.price||0) + overCost;
+      const surchargeVal = Math.round(subTotal * (surPerc/100));
+      const total = subTotal + surchargeVal;
+
+      // ETA (start tomorrow 00:00)
+      const eta = addDays(nextDayStart(), days - 1); // hari ke-N berakhir 00:00 hari berikutnya
+      const etaText = eta.toLocaleDateString('id-ID', {weekday:'long', day:'2-digit', month:'long', year:'numeric'}) + ' 00:00';
+
+      // Render summary
+      document.getElementById('sumOver').textContent = `${overMin} mnt × IDR ${numberWithSeparators(pkg.overRatePerMin||0)} = ${fmtIDR(overCost)}`;
+      document.getElementById('sumSurcharge').textContent = `+${surPerc}% = ${fmtIDR(surchargeVal)}`;
+      document.getElementById('sumTotal').textContent = fmtIDR(total);
+      document.getElementById('eta').textContent = etaText;
+
+      // Order code
+      const rev2 = String(pkg.revisions||0).padStart(2,'0');
+      const days2 = String(days).padStart(2,'0') + 'h'; // h = hari
+      const code = `DDHP-r${rev2}.${days2}.${total}.p${pkg.id}-${randCode(6)}`;
+      document.getElementById('orderCode').textContent = code;
+
+      // Enable button if valid
+      const phoneOK = !!(cfg.whatsapp && /^(\d{9,15})$/.test(String(cfg.whatsapp)));
+      const formOK = durasi>=1 && days>=1 && noteOK && phoneOK && (!ref || isValidUrl(ref));
+      document.getElementById('btnOrder').disabled = !formOK;
+      document.getElementById('btnOrder').dataset.total = total;
+      document.getElementById('btnOrder').dataset.code = code;
+      document.getElementById('btnOrder').dataset.durasi = durasi;
+      document.getElementById('btnOrder').dataset.days = days;
+      document.getElementById('btnOrder').dataset.ref = ref;
+      document.getElementById('btnOrder').dataset.note = note;
+    }
+
+    function onOrder(){
+      const btn = document.getElementById('btnOrder');
+      const phone = String(cfg.whatsapp);
+      const msg = [
+        `Paket: ${pkg.name} (p${pkg.id})`,
+        `Durasi: ${btn.dataset.durasi} menit`,
+        `Deadline: ${btn.dataset.days} hari (mulai besok 00:00)`,
+        `Harga: ${fmtIDR(Number(btn.dataset.total))}`,
+        btn.dataset.ref ? `Referensi: ${btn.dataset.ref}` : null,
+        `Catatan: ${btn.dataset.note}`,
+        `Order Code: ${btn.dataset.code}`
+      ].filter(Boolean).join('\n');
+
+      const url = `https://wa.me/${phone}?text=` + encodeURIComponent(msg);
+      window.location.href = url;
+    }
+
+    function numberWithSeparators(x){return (x??0).toString().replace(/\B(?=(\d{3})+(?!\d))/g,',')}
+    function isValidUrl(u){
+      try{ new URL(u); return true; }catch(e){ return false; }
+    }
+  </script>
+</body>
+</html>
+
+<!--
+  EXPECTED ../../config/prices.json (contoh minimal):
+  {
+    "whatsapp": "62812xxxxxxx",
+    "surcharge": { "1": 30, "2": 15, "3": 0 },
+    "packages": [
+      {"id":1, "name":"Paket InstaClip", "price":15000, "revisions":1, "durationText":"1–5 menit", "overRatePerMin":5000, "leadTime":"0–1 hari", "features":["cut basic","overlay sederhana","1 backsound"]}
+    ]
+  }
+
+  CATATAN:
+  - Jika config gagal dimuat atau paket id tidak ditemukan → halaman akan error (sesuai permintaan).
+  - Surcharge dipilih berdasarkan nilai hari <= kunci terdekat (1→30%, 2→15%, >=3→0%).
+  - Deadline visual: start besok 00:00, tampilkan tanggal akhir jam 00:00.
+  - Order code format: DDHP-r<revisi2digit>.<deadlineHari>h.<hargaTotal>.p<ID>-<6charRandom>.
+  - Random code alfanumerik uppercase, memastikan campuran huruf & angka.
+  - Satu tombol CTA saja: "Order via WhatsApp".
+-->
