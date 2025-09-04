@@ -3,7 +3,7 @@
     {
       "id": "instaclip",
       "name": "Paket InstaClip",
-      "price": 195000,
+      "price": 15000,
       "revisions": 1,
       "durationText": "1–5 menit",
       "overRatePerMin": 5000,
@@ -52,4 +52,5 @@
     }
   ]
 }
+
 
