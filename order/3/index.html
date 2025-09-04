@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Order — Paket 3 (Kreator)</title>
-  <meta name="description" content="Form order paket Kreator. Hitung harga otomatis, validasi deadline realistis, generate order code, kirim ke WhatsApp." />
+  <meta name="description" content="Form order paket Kreator. Hitung harga otomatis, validasi deadline realistis, buffer fee durasi panjang, generate order code, kirim ke WhatsApp." />
   <style>
     :root{
       --bg:#1D1D1D; --card:#232323; --accent:#FF0072; --muted:#bfc3c6; --glass: rgba(255,255,255,0.06);
@@ -55,7 +55,7 @@
         <div class="logo"><img src="../../assets/Logo.png" alt="Logo"></div>
         <div>
           <h1>Order — Paket <span id="pkgName">Kreator</span></h1>
-          <p class="lead">Hitung harga otomatis • Validasi deadline realistis • WhatsApp redirect</p>
+          <p class="lead">Hitung harga otomatis • Validasi deadline realistis • Buffer fee durasi panjang • WhatsApp redirect</p>
         </div>
       </div>
       <div class="muted" style="font-size:13px">Sumber config: <code>../../config/prices.json</code></div>
@@ -72,7 +72,7 @@
           </div>
           <div>
             <label for="deadline">Deadline (hari) *</label>
-            <input id="deadline" type="number" min="1" step="1" placeholder="contoh: 5" required>
+            <input id="deadline" type="number" min="1" step="1" placeholder="contoh: 3" required>
             <div id="deadlineHelper" class="helper">Perhitungan dimulai <b>hari berikutnya sesuai jam kerja</b> setelah <b>file RAW diterima</b>.</div>
           </div>
         </div>
@@ -102,7 +102,7 @@
           <div><span>Base price</span><span id="sumBase">IDR 0</span></div>
           <div><span>Overtime</span><span id="sumOver">0 mnt × IDR 0 = IDR 0</span></div>
           <div><span>Deadline surcharge</span><span id="sumSurcharge">+0% = IDR 0</span></div>
-          <div><span>Express multiplier</span><span id="sumMult">×1 = IDR 0</span></div>
+          <div><span>Buffer fee</span><span id="sumBuffer">+0% = IDR 0</span></div>
           <div class="total"><span>Total</span><span id="sumTotal">IDR 0</span></div>
           <div class="helper">Estimasi selesai: <b id="eta">-</b></div>
         </div>
@@ -145,6 +145,14 @@
       return Math.ceil(requiredHours / avgHoursPerDay);
     }
 
+    function computeBufferPercent(durasi, map){
+      if(!map) return 0;
+      const keys = Object.keys(map).map(Number).sort((a,b)=>a-b);
+      let percent = 0;
+      for(const k of keys){ if(durasi > k) percent = Number(map[k])||0; }
+      return percent;
+    }
+
     function update(){
       if(!pkg) return;
       const durasi=Math.max(1,parseInt(document.getElementById('durasi').value||0,10));
@@ -175,18 +183,23 @@
       const surchargeVal=Math.round(subTotal*(surPerc/100));
       let total=subTotal+surchargeVal;
 
+      // Buffer fee for long duration
+      const bufPerc = computeBufferPercent(durasi, cfg.bufferFee);
+      const bufVal = Math.round(total * (bufPerc/100));
+      total += bufVal;
+
       const eta=addDays(nextDayStart(),days-1);
       const etaText=eta.toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 
       document.getElementById('sumOver').textContent=`${overMin} mnt × IDR ${numberWithSeparators(pkg.overRatePerMin||0)} = ${fmtIDR(overCost)}`;
       document.getElementById('sumSurcharge').textContent=`+${surPerc}% = ${fmtIDR(surchargeVal)}`;
-      document.getElementById('sumMult').textContent=`×1 = IDR 0`;
+      document.getElementById('sumBuffer').textContent=`+${bufPerc}% = ${fmtIDR(bufVal)}`;
       document.getElementById('sumTotal').textContent=fmtIDR(total);
       document.getElementById('eta').textContent=`${etaText} (mulai sesuai jam kerja, setelah file RAW diterima)`;
 
-      const rev2=String(pkg.revisions||0).padStart(2,'0');
+      const durasi2=String(durasi).padStart(2,'0');
       const days2=String(days).padStart(2,'0')+'h';
-      const code=`DDHP-r${rev2}.${days2}.${total}.p${pkg.id}-${randCode(6)}`;
+      const code=`DDHP-r${durasi2}.${days2}.${total}.p${pkg.id}-${randCode(6)}`;
       document.getElementById('orderCode').textContent=code;
 
       const phoneOK=!!(cfg.whatsapp&&/^(\d{9,15})$/.test(String(cfg.whatsapp)));
