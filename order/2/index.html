@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Order — Paket 2</title>
-  <meta name="description" content="Form order paket editing. Hitung harga otomatis, generate order code, kirim ke WhatsApp." />
+  <title>Order — Paket 2 (Standar)</title>
+  <meta name="description" content="Form order paket Standar. Hitung harga otomatis, validasi deadline realistis, generate order code, kirim ke WhatsApp." />
   <style>
     :root{
       --bg:#1D1D1D; --card:#232323; --accent:#FF0072; --muted:#bfc3c6; --glass: rgba(255,255,255,0.06);
@@ -54,8 +54,8 @@
       <div class="brand">
         <div class="logo"><img src="../../assets/Logo.png" alt="Logo"></div>
         <div>
-          <h1>Order — Paket <span id="pkgName">#2</span></h1>
-          <p class="lead">Hitung harga otomatis • Satu tombol CTA • WhatsApp redirect</p>
+          <h1>Order — Paket <span id="pkgName">Standar</span></h1>
+          <p class="lead">Hitung harga otomatis • Validasi deadline realistis • WhatsApp redirect</p>
         </div>
       </div>
       <div class="muted" style="font-size:13px">Sumber config: <code>../../config/prices.json</code></div>
@@ -73,7 +73,7 @@
           <div>
             <label for="deadline">Deadline (hari) *</label>
             <input id="deadline" type="number" min="1" step="1" placeholder="contoh: 3" required>
-            <div class="helper">Perhitungan dimulai <b>hari berikutnya sesuai jam kerja</b> setelah <b>file RAW diterima</b>. <span class="warn">Pastikan file sudah terkirim.</span></div>
+            <div id="deadlineHelper" class="helper">Perhitungan dimulai <b>hari berikutnya sesuai jam kerja</b> setelah <b>file RAW diterima</b>.</div>
           </div>
         </div>
         <div>
@@ -111,7 +111,7 @@
   </main>
 
   <script>
-    const PACKAGE_ID = (location.pathname.match(/\/order\/(\d+)/)||[])[1] ? parseInt((location.pathname.match(/\/order\/(\d+)/)||[])[1],10) : 2;
+    const PACKAGE_ID = 2; // Standar
     const CONFIG_PATH = '../../config/prices.json';
     const RAND_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
@@ -119,9 +119,6 @@
     function randCode(len=6){ let code=''; for(let i=0;i<len;i++){ code += RAND_CHARS[Math.floor(Math.random()*RAND_CHARS.length)]; } if(!(/[A-Z]/.test(code)&&/\d/.test(code))){ return randCode(len); } return code; }
     function addDays(date, days){ const d=new Date(date); d.setDate(d.getDate()+days); return d; }
     function nextDayStart(){ const d=new Date(); d.setDate(d.getDate()+1); d.setHours(0,0,0,0); return d; }
-
-    function computeSurchargePercent(days, map){ if(!map||Object.keys(map).length===0) return 0; const keys=Object.keys(map).map(Number).sort((a,b)=>a-b); for(const k of keys){ if(days<=k) return Number(map[k])||0;} return 0; }
-    function computeMultiplier(days,map){ if(!map||Object.keys(map).length===0) return 1; const keys=Object.keys(map).map(Number).sort((a,b)=>a-b); for(const k of keys){ if(days<=k) return Number(map[k])||1;} return 1; }
 
     let pkg=null; let cfg=null;
 
@@ -142,10 +139,16 @@
       update();
     })().catch(err=>{ alert('Config error: '+err.message+'\nCek file '+CONFIG_PATH); console.error(err); });
 
+    function estimateMinDays(durasi, workloadPerMin){
+      const requiredHours = durasi * workloadPerMin;
+      const avgHoursPerDay = 5; // konservatif rata-rata (campuran weekday/weekend)
+      return Math.ceil(requiredHours / avgHoursPerDay);
+    }
+
     function update(){
       if(!pkg) return;
       const durasi=Math.max(1,parseInt(document.getElementById('durasi').value||0,10));
-      const days=Math.max(1,parseInt(document.getElementById('deadline').value||0,10));
+      let days=Math.max(1,parseInt(document.getElementById('deadline').value||0,10));
       const note=(document.getElementById('note').value||'').trim();
       const ref=(document.getElementById('ref').value||'').trim();
 
@@ -153,24 +156,31 @@
       const noteOK=note.length>=80;
       noteErr.style.display=noteOK?'none':'block';
 
+      // Deadline validator based on workload
+      const workload = pkg.workloadPerMin || 1; // default Standar 1 jam per menit
+      const minDays = estimateMinDays(durasi, workload);
+      if(days < minDays){
+        days = minDays;
+        document.getElementById('deadline').value = minDays;
+        document.getElementById('deadlineHelper').innerHTML = `<span class='warn'>Deadline disesuaikan ke minimum ${minDays} hari (durasi terlalu panjang).</span>`;
+      } else {
+        document.getElementById('deadlineHelper').innerHTML = `Perhitungan dimulai <b>hari berikutnya sesuai jam kerja</b> setelah <b>file RAW diterima</b>.`;
+      }
+
       const overMin=Math.max(0,durasi-5);
       const overCost=overMin*(pkg.overRatePerMin||0);
 
-      const surPerc=computeSurchargePercent(days,cfg.surcharge);
+      const surPerc=(cfg.surcharge && cfg.surcharge[days])?Number(cfg.surcharge[days]):0;
       const subTotal=(pkg.price||0)+overCost;
       const surchargeVal=Math.round(subTotal*(surPerc/100));
       let total=subTotal+surchargeVal;
-
-      const mult=computeMultiplier(days,cfg.multiplier);
-      const multVal=Math.round(total*(mult-1));
-      total=Math.round(total*mult);
 
       const eta=addDays(nextDayStart(),days-1);
       const etaText=eta.toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 
       document.getElementById('sumOver').textContent=`${overMin} mnt × IDR ${numberWithSeparators(pkg.overRatePerMin||0)} = ${fmtIDR(overCost)}`;
       document.getElementById('sumSurcharge').textContent=`+${surPerc}% = ${fmtIDR(surchargeVal)}`;
-      document.getElementById('sumMult').textContent=`×${mult} = ${fmtIDR(multVal)}`;
+      document.getElementById('sumMult').textContent=`×1 = IDR 0`;
       document.getElementById('sumTotal').textContent=fmtIDR(total);
       document.getElementById('eta').textContent=`${etaText} (mulai sesuai jam kerja, setelah file RAW diterima)`;
 
