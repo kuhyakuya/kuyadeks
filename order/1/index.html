@@ -71,7 +71,7 @@
           <div>
             <label for="deadline">Deadline (hari) *</label>
             <input id="deadline" type="number" min="1" step="1" placeholder="contoh: 3" required>
-            <div class="helper">Perhitungan dimulai <b>besok</b> 00:00 setelah <b>file RAW diterima</b>. <span class="warn">Pastikan file sudah terkirim.</span></div>
+            <div class="helper">Perhitungan dimulai <b>hari berikutnya sesuai jam kerja</b> setelah <b>file RAW diterima</b>. <span class="warn">Pastikan file sudah terkirim.</span></div>
           </div>
         </div>
         <div>
@@ -161,13 +161,13 @@
       total=Math.round(total*mult);
 
       const eta=addDays(nextDayStart(),days-1);
-      const etaText=eta.toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})+' 00:00';
+      const etaText=eta.toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 
       document.getElementById('sumOver').textContent=`${overMin} mnt × IDR ${numberWithSeparators(pkg.overRatePerMin||0)} = ${fmtIDR(overCost)}`;
       document.getElementById('sumSurcharge').textContent=`+${surPerc}% = ${fmtIDR(surchargeVal)}`;
       document.getElementById('sumMult').textContent=`×${mult} = ${fmtIDR(multVal)}`;
       document.getElementById('sumTotal').textContent=fmtIDR(total);
-      document.getElementById('eta').textContent=etaText;
+      document.getElementById('eta').textContent=`${etaText} (mulai sesuai jam kerja, setelah file RAW diterima)`;
 
       const rev2=String(pkg.revisions||0).padStart(2,'0');
       const days2=String(days).padStart(2,'0')+'h';
@@ -191,7 +191,7 @@
       const msg=[
         `*Paket:* ${pkg.name}`,
         `*Durasi:* ${btn.dataset.durasi} menit`,
-        `*Deadline:* ${btn.dataset.days} hari (mulai besok 00:00)`,
+        `*Deadline:* ${btn.dataset.days} hari (mulai sesuai jam kerja, setelah file RAW diterima)` ,
         `*Harga:* ${fmtIDR(Number(btn.dataset.total))}`,
         btn.dataset.ref?`*Referensi:* ${btn.dataset.ref}`:null,
         `*Catatan:* ${btn.dataset.note}`,
