@@ -128,7 +128,7 @@
       pkg=(cfg.packages||[]).find(p=>Number(p.id)===Number(PACKAGE_ID));
       if(!pkg) throw new Error('Paket id '+PACKAGE_ID+' tidak ditemukan di config.');
 
-      document.getElementById('pkgName').textContent=`${pkg.name} (p${pkg.id})`;
+      document.getElementById('pkgName').textContent=`${pkg.name}`;
       document.getElementById('sumPkg').textContent=`${pkg.name} — revisi ${pkg.revisions}`;
       document.getElementById('sumBase').textContent=fmtIDR(pkg.price);
 
@@ -189,13 +189,13 @@
       const btn=document.getElementById('btnOrder');
       const phone=String(cfg.whatsapp);
       const msg=[
-        `Paket: ${pkg.name} (p${pkg.id})`,
-        `Durasi: ${btn.dataset.durasi} menit`,
-        `Deadline: ${btn.dataset.days} hari (mulai besok 00:00)`,
-        `Harga: ${fmtIDR(Number(btn.dataset.total))}`,
-        btn.dataset.ref?`Referensi: ${btn.dataset.ref}`:null,
-        `Catatan: ${btn.dataset.note}`,
-        `Order Code: ${btn.dataset.code}`
+        `*Paket:* ${pkg.name}`,
+        `*Durasi:* ${btn.dataset.durasi} menit`,
+        `*Deadline:* ${btn.dataset.days} hari (mulai besok 00:00)`,
+        `*Harga:* ${fmtIDR(Number(btn.dataset.total))}`,
+        btn.dataset.ref?`*Referensi:* ${btn.dataset.ref}`:null,
+        `*Catatan:* ${btn.dataset.note}`,
+        `*Order Code:* ${btn.dataset.code}`
       ].filter(Boolean).join('\n');
       const url=`https://wa.me/${phone}?text=`+encodeURIComponent(msg);
       window.location.href=url;
