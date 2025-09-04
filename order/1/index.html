@@ -27,7 +27,7 @@
     label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
     input[type="number"], input[type="url"], textarea{width:100%;background:#1f1f1f;border:1px solid rgba(255,255,255,0.08);color:#fff;border-radius:10px;padding:10px;font-size:14px}
     input[type="number"]{appearance:textfield}
-    textarea{min-height:120px;resize:vertical}
+    textarea{min-height:160px;resize:vertical}
 
     .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     @media (max-width:560px){.row{grid-template-columns:1fr}}
@@ -79,10 +79,10 @@
           <input id="ref" type="url" placeholder="https://...">
         </div>
         <div>
-          <label for="note">Catatan (brief) * — minimal 30 karakter</label>
-          <textarea id="note" minlength="30" placeholder="Tulis arahan jelas: bagian yang dipotong, vibe, efek, warna, contoh referensi, dsb." required></textarea>
-          <div class="helper">Contoh: "Cut menit 00:10–00:50, overlay judul besar, transisi cepat, color warm, tambahkan beat drop di menit 00:30."</div>
-          <div id="noteErr" class="helper err" style="display:none">Brief terlalu pendek. Minimal 30 karakter.</div>
+          <label for="note">Brief (catatan): * — minimal 80 karakter</label>
+          <textarea id="note" minlength="80" placeholder="Tulis brief jelas: bagian yang dipotong, style, efek, warna, mood, contoh referensi, dsb." required></textarea>
+          <div class="helper">Contoh: "Cut menit 00:10–00:50, overlay judul besar, transisi cepat, color warm, tambahkan beat drop di menit 00:30, tambahin subtitle animasi di bagian chorus."</div>
+          <div id="noteErr" class="helper err" style="display:none">Brief terlalu pendek. Minimal 80 karakter.</div>
         </div>
 
         <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
@@ -145,7 +145,7 @@
       const ref=(document.getElementById('ref').value||'').trim();
 
       const noteErr=document.getElementById('noteErr');
-      const noteOK=note.length>=30;
+      const noteOK=note.length>=80;
       noteErr.style.display=noteOK?'none':'block';
 
       const overMin=Math.max(0,durasi-5);
@@ -206,21 +206,3 @@
   </script>
 </body>
 </html>
-
-<!--
-  Tambahan config untuk multiplier express:
-  "multiplier": { "1": 2.5, "2": 1.5, "3": 1 }
-
-  Contoh config lengkap:
-  {
-    "whatsapp": "62812xxxxxxx",
-    "surcharge": { "1": 30, "2": 15, "3": 0 },
-    "multiplier": { "1": 2.5, "2": 1.5, "3": 1 },
-    "packages": [
-      {"id":1, "name":"Paket InstaClip", "price":15000, "revisions":1, "durationText":"1–5 menit", "overRatePerMin":5000, "leadTime":"0–1 hari", "features":["cut basic","overlay sederhana","1 backsound"]}
-    ]
-  }
-
-  - Express multiplier diterapkan setelah surcharge dihitung.
-  - Ditampilkan di ringkasan (baris baru "Express multiplier").
--->
