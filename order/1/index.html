@@ -44,6 +44,7 @@
 
     .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:var(--glass);font-size:12px;color:#fff;margin-right:6px}
     .muted{color:var(--muted)}
+    .counter{font-size:12px;color:var(--muted);margin-top:4px;text-align:right}
   </style>
 </head>
 <body>
@@ -79,10 +80,11 @@
           <input id="ref" type="url" placeholder="https://...">
         </div>
         <div>
-          <label for="note">Brief (catatan): * — minimal 80 karakter</label>
-          <textarea id="note" minlength="80" placeholder="Tulis brief jelas: bagian yang dipotong, style, efek, warna, mood, contoh referensi, dsb." required></textarea>
+          <label for="note">Brief (catatan): * — minimal 80, maksimal 1500 karakter</label>
+          <textarea id="note" minlength="80" maxlength="1500" placeholder="Tulis brief jelas: bagian yang dipotong, style, efek, warna, mood, contoh referensi, dsb." required></textarea>
           <div class="helper">Contoh: "Cut menit 00:10–00:50, overlay judul besar, transisi cepat, color warm, tambahkan beat drop di menit 00:30, tambahin subtitle animasi di bagian chorus."</div>
           <div id="noteErr" class="helper err" style="display:none">Brief terlalu pendek. Minimal 80 karakter.</div>
+          <div id="noteCounter" class="counter">0 / 1500</div>
         </div>
 
         <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
@@ -133,6 +135,7 @@
       document.getElementById('sumBase').textContent=fmtIDR(pkg.price);
 
       ['durasi','deadline','ref','note'].forEach(id=>{ document.getElementById(id).addEventListener('input',update); document.getElementById(id).addEventListener('change',update); });
+      document.getElementById('note').addEventListener('input',updateCounter);
       document.getElementById('btnOrder').addEventListener('click',onOrder);
       update();
     })().catch(err=>{ alert('Config error: '+err.message+'\nCek file '+CONFIG_PATH); console.error(err); });
@@ -183,6 +186,12 @@
       document.getElementById('btnOrder').dataset.days=days;
       document.getElementById('btnOrder').dataset.ref=ref;
       document.getElementById('btnOrder').dataset.note=note;
+    }
+
+    function updateCounter(){
+      const note=document.getElementById('note');
+      const counter=document.getElementById('noteCounter');
+      counter.textContent=`${note.value.length} / 1500`;
     }
 
     function onOrder(){
