@@ -19,7 +19,7 @@
       "durationText": "1–5 menit",
       "overRatePerMin": 5000,
       "leadTime": "0–2 hari",
-      "workloadPerMin": 0.5,
+      "workloadPerMin": 12000,
       "features": [
         "cut basic",
         "overlay sederhana",
@@ -66,3 +66,4 @@
     }
   ]
 }
+
