@@ -4,11 +4,11 @@
     {
       "id": 1,
       "name": "Paket InstaClip",
-      "price": 199995000,
+      "price": 15000,
       "revisions": 1,
       "durationText": "1–5 menit",
       "overRatePerMin": 5000,
-      "leadTime": "0–1 hari",
+      "leadTime": "0–2 hari",
       "features": [
         "cut basic",
         "overlay sederhana",
@@ -53,4 +53,5 @@
     }
   ]
 }
+
 
