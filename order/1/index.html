@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Order — Paket 1 (InstaClip)</title>
+  <title>Order — InstaClip</title>
   <meta name="description" content="Form order paket InstaClip. Hitung harga otomatis, validasi deadline realistis, buffer fee untuk durasi panjang, generate order code, kirim ke WhatsApp." />
   <style>
     :root{
@@ -100,7 +100,6 @@
       <aside class="card">
         <h2>Ringkasan</h2>
         <div class="summary">
-          <div><span>Paket</span><span id="sumPkg">-</span></div>
           <div><span>Base price</span><span id="sumBase">IDR 0</span></div>
           <div><span>Overtime</span><span id="sumOver">0 mnt × IDR 0 = IDR 0</span></div>
           <div><span>Deadline surcharge</span><span id="sumSurcharge">+0% = IDR 0</span></div>
@@ -118,8 +117,7 @@
 
   <script>
     const PACKAGE_ID = 1; // InstaClip
-    // Pastikan path config selalu benar relatif terhadap lokasi file ini
-    const CONFIG_PATH = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '') + '/../../config/prices.json';
+    const CONFIG_PATH = '../../config/prices.json';
     const RAND_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
     const fmtIDR = n => 'IDR ' + (n||0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -130,29 +128,20 @@
     let pkg=null; let cfg=null;
 
     (async function init(){
-      try{
-        console.log("Load config from:", CONFIG_PATH);
-        const res=await fetch(CONFIG_PATH,{cache:'no-store'});
-        console.log("Fetch status:", res.status);
-        if(!res.ok) throw new Error('Gagal memuat config: '+CONFIG_PATH);
-        cfg=await res.json();
-        console.log("Config loaded:", cfg);
-        pkg=(cfg.packages||[]).find(p=>Number(p.id)===Number(PACKAGE_ID));
-        if(!pkg) throw new Error('Paket id '+PACKAGE_ID+' tidak ditemukan di config.');
+      const res=await fetch(CONFIG_PATH,{cache:'no-store'});
+      if(!res.ok) throw new Error('Gagal memuat config: '+CONFIG_PATH);
+      cfg=await res.json();
+      pkg=(cfg.packages||[]).find(p=>Number(p.id)===Number(PACKAGE_ID));
+      if(!pkg) throw new Error('Paket id '+PACKAGE_ID+' tidak ditemukan di config.');
 
-        document.getElementById('pkgName').textContent=`${pkg.name}`;
-        document.getElementById('sumPkg').textContent=`${pkg.name} — revisi ${pkg.revisions}`;
-        document.getElementById('sumBase').textContent=fmtIDR(pkg.price);
+      document.getElementById('pkgName').textContent=`${pkg.name}`;
+      document.getElementById('sumBase').textContent=fmtIDR(pkg.price);
 
-        ['durasi','deadline','ref','note'].forEach(id=>{ document.getElementById(id).addEventListener('input',update); document.getElementById(id).addEventListener('change',update); });
-        document.getElementById('note').addEventListener('input',updateCounter);
-        document.getElementById('btnOrder').addEventListener('click',onOrder);
-        update();
-      }catch(err){
-        console.error("Init error:", err);
-        alert('Config error: '+err.message+'\nCek file '+CONFIG_PATH);
-      }
-    })();
+      ['durasi','deadline','ref','note'].forEach(id=>{ document.getElementById(id).addEventListener('input',update); document.getElementById(id).addEventListener('change',update); });
+      document.getElementById('note').addEventListener('input',updateCounter);
+      document.getElementById('btnOrder').addEventListener('click',onOrder);
+      update();
+    })().catch(err=>{ alert('Config error: '+err.message+'\nCek file '+CONFIG_PATH); console.error(err); });
 
     function estimateMinDays(durasi, workloadPerMin){
       const requiredHours = durasi * workloadPerMin;
@@ -179,6 +168,7 @@
       const noteOK=note.length>=80;
       noteErr.style.display=noteOK?'none':'block';
 
+      // Validasi URL
       const refInput=document.getElementById('ref');
       const refErr=document.getElementById('refErr');
       let refOK=true;
@@ -236,9 +226,6 @@
       document.getElementById('btnOrder').dataset.days=days;
       document.getElementById('btnOrder').dataset.ref=ref;
       document.getElementById('btnOrder').dataset.note=note;
-      document.getElementById('btnOrder').dataset.over=overCost;
-      document.getElementById('btnOrder').dataset.surcharge=surchargeVal;
-      document.getElementById('btnOrder').dataset.buffer=bufVal;
     }
 
     function updateCounter(){
@@ -256,5 +243,17 @@
         `*Paket:* ${pkg.name}`,
         `*Durasi:* ${btn.dataset.durasi} menit`,
         `*Deadline:* ${btn.dataset.days} hari (mulai sesuai jam kerja, setelah file RAW diterima)` ,
-        `*Base price:* ${fmtIDR(pkg.price)}`,
-        `*Overtime:* ${fmtIDR(Number(btn.dataset.over))
+        `*Harga:* ${fmtIDR(Number(btn.dataset.total))}`,
+        btn.dataset.ref?`*Referensi:* ${btn.dataset.ref}`:null,
+        `*Brief:* ${btn.dataset.note}`,
+        `*Order Code:* ${btn.dataset.code}`
+      ].filter(Boolean).join('\n');
+      const url=`https://wa.me/${phone}?text=`+encodeURIComponent(msg);
+      window.location.href=url;
+    }
+
+    function numberWithSeparators(x){return (x??0).toString().replace(/\B(?=(\d{3})+(?!\d))/g,',')}
+    function isValidUrl(u){ try{ new URL(u); return true; }catch(e){ return false; } }
+  </script>
+</body>
+</html>
