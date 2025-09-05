@@ -6,7 +6,7 @@
   <title>Order — Kreator</title>
   <meta name="description" content="Form order paket Kreator. Hitung harga otomatis, validasi deadline realistis, buffer fee, generate order code, kirim ke WhatsApp." />
   <style>
-    :root{ --bg:#1D1D1D; --card:#232323; --accent:#FF0072; --muted:#bfc3c6; --glass: rgba(255,255,255,0.06); --gold:#FFD54F; --gold-text:#2a2200; --disabled:#888888; }
+    :root{ --bg:#1D1D1D; --card:#232323; --accent:#FF0072; --muted:#bfc3c6; --glass: rgba(255,255,255,0.06); --gold:#FFD54F; --gold-text:#2a2200; --disabled:#303030; }
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial; background:var(--bg); color:#fff; padding:24px; display:flex; justify-content:center}
     .container{max-width:900px; width:100%}
@@ -85,9 +85,9 @@
           <div id="refErr" class="helper err" style="display:none">Link tidak valid. Contoh: https://google.com</div>
         </div>
         <div>
-          <label for="note">Brief (catatan): * — minimal 80, maksimal 1200 karakter</label>
+          <label for="note">Brief (catatan):</label>
           <textarea id="note" minlength="80" maxlength="1200" placeholder="Tulis brief jelas..." required></textarea>
-          <div class="helper">Contoh: "Cut menit 00:10–00:50, overlay judul besar, transisi cepat..."</div>
+          <div class="helper">Contoh: "cut saat saya tidak berbicara ke kamera, ambil momen lucu, ambil memen epic di footage ***.mp4 detik ke 15"</div>
           <div id="noteErr" class="helper err" style="display:none">Brief terlalu pendek. Minimal 80 karakter.</div>
           <div id="noteCounter" class="counter">0 / 1200</div>
           <div id="noteWarn" class="warn-limit">⚠️ Hampir mencapai batas maksimal WhatsApp (1200 karakter)</div>
@@ -246,3 +246,4 @@
   </script>
 </body>
 </html>
+
