@@ -85,7 +85,7 @@
           <div id="refErr" class="helper err" style="display:none">Link tidak valid. Contoh: https://google.com</div>
         </div>
         <div>
-          <label for="note">Brief (catatan): * — minimal 80, maksimal 1200 karakter</label>
+          <label for="note">Brief (catatan):</label>
           <textarea id="note" minlength="80" maxlength="1200" placeholder="Tulis brief jelas..." required></textarea>
           <div class="helper">Contoh: "Cut menit 00:10–00:50, overlay judul besar, transisi cepat..."</div>
           <div id="noteErr" class="helper err" style="display:none">Brief terlalu pendek. Minimal 80 karakter.</div>
@@ -226,14 +226,15 @@
         `*Durasi:* ${btn.dataset.durasi} menit`,
         `*Deadline:* ${btn.dataset.days} hari (mulai sesuai jam kerja, setelah file RAW diterima)`,
         '',
-        `*Ringkasan>*`,
+        `*Ringkasan:*`,
         `> Harga normal: ${Pricing.fmtIDR(calc.normal)}`,
         calc.discountPercent>0?`> Diskon ${calc.discountPercent}%: -${Pricing.fmtIDR(calc.normal-calc.baseFinal)}`:null,
         `> Base price: ${Pricing.fmtIDR(calc.baseFinal)}`,
         `> Overtime: ${calc.overMin} mnt × ${Pricing.fmtIDR(calc.overRate)} = ${Pricing.fmtIDR(calc.overCost)}`,
         `> Deadline surcharge: +${calc.surPerc}% = ${Pricing.fmtIDR(calc.surchargeVal)}`,
         `> Buffer fee: +${calc.bufPerc}% = ${Pricing.fmtIDR(calc.bufVal)}`,
-        `> Total: ${Pricing.fmtIDR(calc.total)}`,
+        `> ${Pricing.fmtIDR(calc.baseFinal)} + ${Pricing.fmtIDR(calc.overCost)} + ${Pricing.fmtIDR(calc.surchargeVal)} + ${Pricing.fmtIDR(calc.bufVal)}`,
+        `> Total: *${Pricing.fmtIDR(calc.total)}*`,
         '',
         btn.dataset.ref?`*Referensi:* ${btn.dataset.ref}`:null,
         `*Brief:* ${btn.dataset.note}`,
@@ -246,3 +247,4 @@
   </script>
 </body>
 </html>
+
