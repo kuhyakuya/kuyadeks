@@ -6,7 +6,7 @@
   <title>Order — InstaClip</title>
   <meta name="description" content="Form order paket InstaClip. Hitung harga otomatis, validasi deadline realistis, buffer fee, generate order code, kirim ke WhatsApp." />
   <style>
-    :root{ --bg:#1D1D1D; --card:#232323; --accent:#FF0072; --muted:#bfc3c6; --glass: rgba(255,255,255,0.06); }
+    :root{ --bg:#1D1D1D; --card:#232323; --accent:#FF0072; --muted:#bfc3c6; --glass: rgba(255,255,255,0.06); --gold:#FFD54F; --gold-text:#2a2200; }
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial; background:var(--bg); color:#fff; padding:24px; display:flex; justify-content:center}
     .container{max-width:900px; width:100%}
@@ -37,7 +37,8 @@
     .summary div{display:flex;justify-content:space-between;margin:6px 0;font-size:14px}
     .summary .total{font-weight:800;font-size:18px;margin-top:8px;border-top:1px dashed rgba(255,255,255,0.12);padding-top:8px}
 
-    .btn{background:var(--accent);color:white;padding:12px 16px;border-radius:10px;font-weight:700;cursor:pointer;text-decoration:none;border:0;display:inline-block}
+    .btn{background:var(--accent);color:white;padding:12px 16px;border-radius:10px;font-weight:700;cursor:pointer;text-decoration:none;border:0;display:inline-block;transition:all .2s ease}
+    .btn.gold{background:var(--gold);color:var(--gold-text)}
     .btn[disabled]{opacity:.4;cursor:not-allowed}
 
     .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:var(--glass);font-size:12px;color:#fff;margin-top:12px}
@@ -206,6 +207,7 @@
       const formOK=durasi>=1&&days>=1&&noteOK&&refOK&&phoneOK;
       const btn=document.getElementById('btnOrder');
       btn.disabled=!formOK;
+      btn.classList.toggle('gold', calc.discountPercent>0);
       btn.dataset.calc=JSON.stringify(calc);
       btn.dataset.note=note;
       btn.dataset.ref=ref;
