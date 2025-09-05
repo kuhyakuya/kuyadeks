@@ -1,7 +1,8 @@
 {
   "recommended": [2],
   "discounts": {
-    "3": { "percent": 20 }
+    "2": { "percent": 20 }
   }
 }
+
 
