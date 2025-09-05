@@ -26,7 +26,13 @@
         "add backsound",
         "Gratis Revisi 1x"
       ],
-      "tags": ["Konten TikTok/Reels", "Highlight Gaming", "Video pendek promosi"]
+      "tags": ["Konten TikTok/Reels", "Highlight Gaming", "Video pendek promosi"],
+      "policies": [
+        "Revisi lebih dari 1x dikenakan biaya tambahan.",
+        "Revisi gratis hanya jika kesalahan dari editor (glitch, typo, scene salah).",
+        "Brief tidak boleh berubah setelah proyek dimulai.",
+        "DP diperlukan jika nilai proyek melebihi Rp300.000."
+      ]
     },
     {
       "id": 2,
@@ -46,7 +52,13 @@
         "filter warna dasar",
         "Gratis Revisi 2x"
       ],
-      "tags": ["Konten YouTube", "Vlog", "Video Edukasi"]
+      "tags": ["Konten YouTube", "Vlog", "Video Edukasi"],
+      "policies": [
+        "Revisi lebih dari 2x dikenakan biaya tambahan.",
+        "Revisi gratis jika kesalahan dari editor (glitch, typo, scene salah).",
+        "Brief tidak boleh berubah setelah proyek dimulai.",
+        "DP diperlukan jika nilai proyek melebihi Rp300.000."
+      ]
     },
     {
       "id": 3,
@@ -65,9 +77,13 @@
         "motion graphics sederhana",
         "Gratis Revisi 3x"
       ],
-      "tags": ["Iklan Produk", "Cinematic", "Motion Graphics", "Video Musik"]
+      "tags": ["Iklan Produk", "Cinematic", "Motion Graphics", "Video Musik"],
+      "policies": [
+        "Revisi lebih dari 3x dikenakan biaya tambahan.",
+        "Revisi gratis jika kesalahan dari editor (glitch, typo, scene salah).",
+        "Brief tidak boleh berubah setelah proyek dimulai.",
+        "DP diperlukan jika nilai proyek melebihi Rp300.000."
+      ]
     }
   ]
 }
-
-
