@@ -85,8 +85,8 @@
         </div>
         <div>
           <label for="note">Brief (catatan): * — minimal 80, maksimal 1200 karakter</label>
-          <textarea id="note" minlength="80" maxlength="1200" placeholder="Tulis brief jelas: bagian yang dipotong, style, efek, warna, mood, contoh referensi, dsb." required></textarea>
-          <div class="helper">Contoh: "Cut menit 00:10–00:50, overlay judul besar, transisi cepat, color warm, tambahkan beat drop di menit 00:30, tambahin subtitle animasi di bagian chorus."</div>
+          <textarea id="note" minlength="80" maxlength="1200" placeholder="Tulis brief jelas..." required></textarea>
+          <div class="helper">Contoh: "Cut menit 00:10–00:50, overlay judul besar, transisi cepat..."</div>
           <div id="noteErr" class="helper err" style="display:none">Brief terlalu pendek. Minimal 80 karakter.</div>
           <div id="noteCounter" class="counter">0 / 1200</div>
           <div id="noteWarn" class="warn-limit">⚠️ Hampir mencapai batas maksimal WhatsApp (1200 karakter)</div>
@@ -111,117 +111,48 @@
     </section>
   </main>
 
+  <script src="../../assets/pricing.js"></script>
   <script>
-    // ====== STABIL FIX: Paket 1 (InstaClip) ======
-    const EXPLICIT_PACKAGE_ID = 1; // fallback kalau tidak bisa infer dari URL
+    const EXPLICIT_PACKAGE_ID = 1;
     const RAND_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
-    // --- Helpers
-    const fmtIDR = n => 'IDR ' + (Number(n)||0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     function randCode(len=6){ let code=''; for(let i=0;i<len;i++){ code += RAND_CHARS[Math.floor(Math.random()*RAND_CHARS.length)]; } if(!(/[A-Z]/.test(code)&&/\d/.test(code))){ return randCode(len); } return code; }
     function addDays(date, days){ const d=new Date(date); d.setDate(d.getDate()+days); return d; }
     function nextDayStart(){ const d=new Date(); d.setDate(d.getDate()+1); d.setHours(0,0,0,0); return d; }
-    function numberWithSeparators(x){return (x??0).toString().replace(/\B(?=(\d{3})+(?!\d))/g,',')}
     function isValidUrl(u){ try{ new URL(u); return true; }catch(e){ return false; } }
 
     function inferPackageId(){
-      const m = location.pathname.match(/\/order\/(\d+)/); // /order/1/, /order/2/index.html
+      const m = location.pathname.match(/\/order\/(\d+)/);
       if(m){ return parseInt(m[1],10); }
       return EXPLICIT_PACKAGE_ID;
     }
 
-    function buildConfigCandidates(){
-      const path = window.location.pathname; // e.g. /repo/order/1/index.html
-      const candidates = [];
-      const orderIdx = path.indexOf('/order/');
-      if(orderIdx !== -1){
-        const base = path.slice(0, orderIdx); // "/repo" atau ""
-        candidates.push(`${base}/config/prices.json?v=${Date.now()}`); // cache-bust
-        candidates.push(`${base}/config/prices.json`);
-      }
-      candidates.push('../../config/prices.json?v='+Date.now());
-      candidates.push('../../config/prices.json');
-      candidates.push('/config/prices.json?v='+Date.now());
-      candidates.push('/config/prices.json');
-      // de-dup
-      const seen = new Set();
-      return candidates.map(c=>c.replace(/\/+/, '/')).filter(c=>{ if(seen.has(c)) return false; seen.add(c); return true; });
-    }
-
-    async function loadConfig(){
-      const candidates = buildConfigCandidates();
-      let lastErr = null;
-      for(const url of candidates){
-        try{
-          console.log('[CONFIG] Try:', url);
-          const res = await fetch(url, {cache:'no-store'});
-          console.log('         status:', res.status);
-          if(res.ok){
-            const text = await res.text();
-            try{
-              const json = JSON.parse(text);
-              json.__loadedFrom = url;
-              console.log('[CONFIG] Loaded from:', url);
-              return json;
-            }catch(parseErr){
-              console.error('[CONFIG] JSON parse error from', url, parseErr);
-              lastErr = parseErr;
-            }
-          }
-        }catch(e){ lastErr = e; }
-      }
-      throw new Error('Gagal memuat/parse config dari: '+candidates.join(' , ') + (lastErr? (' | '+lastErr.message):''));
-    }
-
-    let pkg=null; let cfg=null; let PID = inferPackageId();
+    let pkg=null; let cfg=null; let promo=null; let PID = inferPackageId();
 
     (async function init(){
       try{
-        console.log('[PKG] Inferred PID from URL =', PID, ' (fallback =', EXPLICIT_PACKAGE_ID, ')');
-        cfg = await loadConfig();
-        if(!cfg || !Array.isArray(cfg.packages)) throw new Error('Config tidak valid: "packages" hilang/invalid');
-        try{ console.table(cfg.packages.map(p=>({id:p.id, name:p.name, price:p.price, over:p.overRatePerMin}))); }catch(e){}
+        const data = await Pricing.loadConfig("../..");
+        cfg = data.prices;
+        promo = data.promo;
+        pkg = cfg.packages.find(p=>Number(p.id)===Number(PID));
+        if(!pkg) throw new Error("Paket tidak ditemukan");
 
-        // Cari paket by ID (normalize number/string)
-        const list = cfg.packages;
-        pkg = list.find(p=>Number(p.id)===Number(PID));
-        if(!pkg){
-          console.warn('[PKG] Paket ID', PID, 'tidak ketemu. Coba fallback ke EXPLICIT_PACKAGE_ID', EXPLICIT_PACKAGE_ID);
-          pkg = list.find(p=>Number(p.id)===Number(EXPLICIT_PACKAGE_ID));
-        }
-        if(!pkg){
-          console.error('[PKG] Paket tidak ditemukan. ID tersedia:', list.map(p=>p.id));
-          throw new Error('Paket id '+PID+' tidak ditemukan di config. ID tersedia: '+list.map(p=>p.id).join(','));
-        }
+        document.getElementById('pkgName').textContent = pkg.name;
+        const {normal, percent, final} = Pricing.getFinalPrice(pkg, promo);
+        document.getElementById('sumBase').textContent = percent>0 ? `${Pricing.fmtIDR(final)} (diskon ${percent}%, normal ${Pricing.fmtIDR(normal)})` : Pricing.fmtIDR(normal);
 
-        // Render base info
-        document.getElementById('pkgName').textContent = `${pkg.name}`;
-        document.getElementById('sumBase').textContent = fmtIDR(pkg.price);
-
-        // Bind form
-        ['durasi','deadline','ref','note'].forEach(id=>{ document.getElementById(id).addEventListener('input',update); document.getElementById(id).addEventListener('change',update); });
+        ['durasi','deadline','ref','note'].forEach(id=>{
+          document.getElementById(id).addEventListener('input',update);
+          document.getElementById(id).addEventListener('change',update);
+        });
         document.getElementById('note').addEventListener('input',updateCounter);
         document.getElementById('btnOrder').addEventListener('click',onOrder);
         update();
       }catch(err){
         console.error('Init error:', err);
-        alert('Config error: '+err.message+'\nPastikan /config/prices.json ada, valid JSON, dan ID paket cocok.');
+        alert('Config error: '+err.message);
       }
     })();
-
-    function estimateMinDays(durasi, workloadPerMin){
-      const requiredHours = durasi * (workloadPerMin || 0.5);
-      const avgHoursPerDay = 5;
-      return Math.ceil(requiredHours / avgHoursPerDay);
-    }
-
-    function computeBufferPercent(durasi, map){
-      if(!map) return 0;
-      const keys = Object.keys(map).map(Number).sort((a,b)=>a-b);
-      let percent = 0;
-      for(const k of keys){ if(durasi > k) percent = Number(map[k])||0; }
-      return percent;
-    }
 
     function update(){
       if(!pkg) return;
@@ -234,7 +165,6 @@
       const noteOK=note.length>=80;
       noteErr.style.display=noteOK?'none':'block';
 
-      // URL validation
       const refInput=document.getElementById('ref');
       const refErr=document.getElementById('refErr');
       let refOK=true;
@@ -244,61 +174,34 @@
         refOK=false;
       } else { refInput.classList.remove('invalid'); refErr.style.display='none'; }
 
-      const workload = pkg.workloadPerMin || 0.5;
-      const minDays = estimateMinDays(durasi, workload);
+      const minDays = 1; // simplified, bisa pakai workload kalau perlu
       if(days < minDays){
         days = minDays;
         document.getElementById('deadline').value = minDays;
-        document.getElementById('deadlineHelper').innerHTML = `<span class='warn'>Deadline disesuaikan ke minimum ${minDays} hari (durasi terlalu panjang).</span>`;
-      } else {
-        document.getElementById('deadlineHelper').innerHTML = `Perhitungan dimulai <b>hari berikutnya sesuai jam kerja</b> setelah <b>file RAW diterima</b>.`;
+        document.getElementById('deadlineHelper').innerHTML = `<span class='warn'>Deadline disesuaikan ke minimum ${minDays} hari.</span>`;
       }
 
-      // Pricing
-      const overMin=Math.max(0,durasi-5);
-      const overRate=(pkg.overRatePerMin||0);
-      const overCost=overMin*overRate;
+      const calc = Pricing.calcTotal(pkg, cfg, promo, durasi, days);
 
-      const surPerc=(cfg.surcharge && cfg.surcharge[days])?Number(cfg.surcharge[days]):0;
-      const subTotal=(pkg.price||0)+overCost;
-      const surchargeVal=Math.round(subTotal*(surPerc/100));
-      let total=subTotal+surchargeVal;
+      document.getElementById('sumOver').textContent=`${calc.overMin} mnt × ${Pricing.fmtIDR(calc.overRate)} = ${Pricing.fmtIDR(calc.overCost)}`;
+      document.getElementById('sumSurcharge').textContent=`+${calc.surPerc}% = ${Pricing.fmtIDR(calc.surchargeVal)}`;
+      document.getElementById('sumBuffer').textContent=`+${calc.bufPerc}% = ${Pricing.fmtIDR(calc.bufVal)}`;
+      document.getElementById('sumTotal').textContent=Pricing.fmtIDR(calc.total);
+      document.getElementById('eta').textContent=addDays(nextDayStart(),days-1).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 
-      const bufPerc = computeBufferPercent(durasi, cfg.bufferFee);
-      const bufVal = Math.round(total * (bufPerc/100));
-      total += bufVal;
-
-      const eta=addDays(nextDayStart(),days-1);
-      const etaText=eta.toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
-
-      document.getElementById('sumOver').textContent=`${overMin} mnt × IDR ${numberWithSeparators(overRate)} = ${fmtIDR(overCost)}`;
-      document.getElementById('sumSurcharge').textContent=`+${surPerc}% = ${fmtIDR(surchargeVal)}`;
-      document.getElementById('sumBuffer').textContent=`+${bufPerc}% = ${fmtIDR(bufVal)}`;
-      document.getElementById('sumTotal').textContent=fmtIDR(total);
-      document.getElementById('eta').textContent=`${etaText} (mulai sesuai jam kerja, setelah file RAW diterima)`;
-
-      const durasi2=String(durasi).padStart(2,'0');
-      const days2=String(days).padStart(2,'0')+'h';
-      const code=`DDHP-r${durasi2}.${days2}.${total}.p${pkg.id}-${randCode(6)}`;
+      const code=`DDHP-r${String(durasi).padStart(2,'0')}.${String(days).padStart(2,'0')}h.${calc.total}.p${pkg.id}-${randCode(6)}`;
       document.getElementById('orderCode').textContent=code;
 
-      const phoneOK=!!(cfg.whatsapp&&/^(\d{9,15})$/.test(String(cfg.whatsapp)));
+      const phoneOK=!!(cfg.whatsapp&&/^\d{9,15}$/.test(String(cfg.whatsapp)));
       const formOK=durasi>=1&&days>=1&&noteOK&&refOK&&phoneOK;
       const btn=document.getElementById('btnOrder');
       btn.disabled=!formOK;
-      btn.dataset.total=total;
+      btn.dataset.calc=JSON.stringify(calc);
+      btn.dataset.note=note;
+      btn.dataset.ref=ref;
       btn.dataset.code=code;
       btn.dataset.durasi=durasi;
       btn.dataset.days=days;
-      btn.dataset.ref=ref;
-      btn.dataset.note=note;
-      btn.dataset.overMin=overMin;
-      btn.dataset.overRate=overRate;
-      btn.dataset.over=overCost;
-      btn.dataset.surcharge=surchargeVal;
-      btn.dataset.surPerc=surPerc;
-      btn.dataset.buffer=bufVal;
-      btn.dataset.bufPerc=bufPerc;
     }
 
     function updateCounter(){
@@ -311,6 +214,7 @@
 
     function onOrder(){
       const btn=document.getElementById('btnOrder');
+      const calc=JSON.parse(btn.dataset.calc);
       const phone=String(cfg.whatsapp);
       const msg=[
         `*Paket:* ${pkg.name}`,
@@ -318,11 +222,13 @@
         `*Deadline:* ${btn.dataset.days} hari (mulai sesuai jam kerja, setelah file RAW diterima)`,
         '',
         `*Ringkasan>*`,
-        `> Base price: ${fmtIDR(pkg.price)}`,
-        `> Overtime: ${btn.dataset.overMin} mnt × ${fmtIDR(btn.dataset.overRate)} = ${fmtIDR(btn.dataset.over)}`,
-        `> Deadline surcharge: +${btn.dataset.surPerc}% = ${fmtIDR(btn.dataset.surcharge)}`,
-        `> Buffer fee: +${btn.dataset.bufPerc}% = ${fmtIDR(btn.dataset.buffer)}`,
-        `> Total: ${fmtIDR(Number(btn.dataset.total))}`,
+        `> Harga normal: ${Pricing.fmtIDR(calc.normal)}`,
+        calc.discountPercent>0?`> Diskon ${calc.discountPercent}%: -${Pricing.fmtIDR(calc.normal-calc.baseFinal)}`:null,
+        `> Base price: ${Pricing.fmtIDR(calc.baseFinal)}`,
+        `> Overtime: ${calc.overMin} mnt × ${Pricing.fmtIDR(calc.overRate)} = ${Pricing.fmtIDR(calc.overCost)}`,
+        `> Deadline surcharge: +${calc.surPerc}% = ${Pricing.fmtIDR(calc.surchargeVal)}`,
+        `> Buffer fee: +${calc.bufPerc}% = ${Pricing.fmtIDR(calc.bufVal)}`,
+        `> Total: ${Pricing.fmtIDR(calc.total)}`,
         '',
         btn.dataset.ref?`*Referensi:* ${btn.dataset.ref}`:null,
         `*Brief:* ${btn.dataset.note}`,
