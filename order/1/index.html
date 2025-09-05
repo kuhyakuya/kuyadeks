@@ -118,7 +118,8 @@
 
   <script>
     const PACKAGE_ID = 1; // InstaClip
-    const CONFIG_PATH = '../../config/prices.json';
+    // Pastikan path config selalu benar relatif terhadap lokasi file ini
+    const CONFIG_PATH = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '') + '/../../config/prices.json';
     const RAND_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
     const fmtIDR = n => 'IDR ' + (n||0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -129,21 +130,29 @@
     let pkg=null; let cfg=null;
 
     (async function init(){
-      const res=await fetch(CONFIG_PATH,{cache:'no-store'});
-      if(!res.ok) throw new Error('Gagal memuat config: '+CONFIG_PATH);
-      cfg=await res.json();
-      pkg=(cfg.packages||[]).find(p=>Number(p.id)===Number(PACKAGE_ID));
-      if(!pkg) throw new Error('Paket id '+PACKAGE_ID+' tidak ditemukan di config.');
+      try{
+        console.log("Load config from:", CONFIG_PATH);
+        const res=await fetch(CONFIG_PATH,{cache:'no-store'});
+        console.log("Fetch status:", res.status);
+        if(!res.ok) throw new Error('Gagal memuat config: '+CONFIG_PATH);
+        cfg=await res.json();
+        console.log("Config loaded:", cfg);
+        pkg=(cfg.packages||[]).find(p=>Number(p.id)===Number(PACKAGE_ID));
+        if(!pkg) throw new Error('Paket id '+PACKAGE_ID+' tidak ditemukan di config.');
 
-      document.getElementById('pkgName').textContent=`${pkg.name}`;
-      document.getElementById('sumPkg').textContent=`${pkg.name} — revisi ${pkg.revisions}`;
-      document.getElementById('sumBase').textContent=fmtIDR(pkg.price);
+        document.getElementById('pkgName').textContent=`${pkg.name}`;
+        document.getElementById('sumPkg').textContent=`${pkg.name} — revisi ${pkg.revisions}`;
+        document.getElementById('sumBase').textContent=fmtIDR(pkg.price);
 
-      ['durasi','deadline','ref','note'].forEach(id=>{ document.getElementById(id).addEventListener('input',update); document.getElementById(id).addEventListener('change',update); });
-      document.getElementById('note').addEventListener('input',updateCounter);
-      document.getElementById('btnOrder').addEventListener('click',onOrder);
-      update();
-    })().catch(err=>{ alert('Config error: '+err.message+'\nCek file '+CONFIG_PATH); console.error(err); });
+        ['durasi','deadline','ref','note'].forEach(id=>{ document.getElementById(id).addEventListener('input',update); document.getElementById(id).addEventListener('change',update); });
+        document.getElementById('note').addEventListener('input',updateCounter);
+        document.getElementById('btnOrder').addEventListener('click',onOrder);
+        update();
+      }catch(err){
+        console.error("Init error:", err);
+        alert('Config error: '+err.message+'\nCek file '+CONFIG_PATH);
+      }
+    })();
 
     function estimateMinDays(durasi, workloadPerMin){
       const requiredHours = durasi * workloadPerMin;
@@ -170,7 +179,6 @@
       const noteOK=note.length>=80;
       noteErr.style.display=noteOK?'none':'block';
 
-      // Validasi URL
       const refInput=document.getElementById('ref');
       const refErr=document.getElementById('refErr');
       let refOK=true;
@@ -249,9 +257,4 @@
         `*Durasi:* ${btn.dataset.durasi} menit`,
         `*Deadline:* ${btn.dataset.days} hari (mulai sesuai jam kerja, setelah file RAW diterima)` ,
         `*Base price:* ${fmtIDR(pkg.price)}`,
-        `*Overtime:* ${fmtIDR(Number(btn.dataset.over))}`,
-        `*Surcharge:* ${fmtIDR(Number(btn.dataset.surcharge))}`,
-        `*Buffer fee:* ${fmtIDR(Number(btn.dataset.buffer))}`,
-        `*Total:* ${fmtIDR(Number(btn.dataset.total))}`,
-        btn.dataset.ref?`*Referensi:* ${btn.dataset.ref}`:null,
-        `*
+        `*Overtime:* ${fmtIDR(Number(btn.dataset.over))
