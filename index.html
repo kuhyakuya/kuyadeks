@@ -30,7 +30,7 @@
     .brand{display:flex;gap:12px;align-items:center}
     .logo img{width:44px;height:44px;border-radius:8px;object-fit:cover}
     h1{font-size:18px}
-    p.lead{color:var(--muted);font-size:13px;margin-top:4px}
+    p.lead{color:var(--muted);font-size:13px;margin-top:4px;min-height:16px;transition:opacity .5s ease}
 
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
 
@@ -99,24 +99,35 @@
         <div class="logo"><img src="assets/Logo.png" alt="Logo"></div>
         <div>
           <h1>KuhyaKuya Studio</h1>
-          <p class="lead">Desain simple, dark mode, fokus pesan utama. Order cepat via WhatsApp.</p>
+          <p class="lead" id="rotating-text">Desain simple, dark mode, fokus pesan utama. Order cepat via WhatsApp.</p>
         </div>
-      </div>
-      <div style="text-align:right;font-size:13px;color:var(--muted)">
-        <div style="font-weight:600;color:#fff">Jam kerja</div>
-        Kamis–Selasa 19:00–22:00 • Sabtu–Minggu 09:00–22:00
       </div>
     </header>
 
     <section class="grid" id="packages"></section>
 
     <footer>
-      <small>Harga transparan, kerjaan adil. Satu klik untuk hasil terbaik bagi client dan freelancer.</small>
+      <small>© KuhyaKuya Studio</small>
     </footer>
   </main>
 
   <script src="assets/pricing.js"></script>
   <script>
+    const texts=[
+      "Desain simple, dark mode, fokus pesan utama. Order cepat via WhatsApp.",
+      "Jam kerja: Kamis–Selasa 19:00–22:00 • Sabtu–Minggu 09:00–22:00"
+    ];
+    let idx=0;
+    const el=document.getElementById('rotating-text');
+    setInterval(()=>{
+      idx=(idx+1)%texts.length;
+      el.style.opacity=0;
+      setTimeout(()=>{
+        el.textContent=texts[idx];
+        el.style.opacity=1;
+      },500);
+    },5000);
+
     async function loadPackages(){
       try{
         const {prices, promo} = await Pricing.loadConfig(".");
