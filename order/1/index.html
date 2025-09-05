@@ -37,10 +37,10 @@
     .summary div{display:flex;justify-content:space-between;margin:6px 0;font-size:14px}
     .summary .total{font-weight:800;font-size:18px;margin-top:8px;border-top:1px dashed rgba(255,255,255,0.12);padding-top:8px}
 
-    .btn{background:var(--accent);color:white;padding:12px 16px;border-radius:10px;font-weight:700;cursor:pointer;text-decoration:none;border:0;display:inline-block;margin-bottom:12px}
+    .btn{background:var(--accent);color:white;padding:12px 16px;border-radius:10px;font-weight:700;cursor:pointer;text-decoration:none;border:0;display:inline-block;margin-bottom:16px}
     .btn[disabled]{opacity:.4;cursor:not-allowed}
 
-    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:var(--glass);font-size:12px;color:#fff;margin-top:8px}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:var(--glass);font-size:12px;color:#fff;margin-top:12px}
     .muted{color:var(--muted)}
     .counter{font-size:12px;color:var(--muted);margin-top:4px;text-align:right}
     .warn-limit{color:#ffd166;font-size:12px;text-align:right;display:none}
@@ -103,7 +103,7 @@
           <div class="total"><span>Total</span><span id="sumTotal">IDR 0</span></div>
           <div class="helper">Estimasi selesai: <b id="eta">-</b></div>
         </div>
-        <div style="margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex-direction:column;align-items:flex-start">
+        <div style="margin-top:16px;display:flex;flex-direction:column;align-items:flex-start;gap:8px">
           <button id="btnOrder" class="btn" disabled>Order via WhatsApp</button>
           <span id="orderCode" class="pill" title="Order Code"></span>
         </div>
@@ -112,7 +112,7 @@
   </main>
 
   <script>
-    // Script tetap sama, hanya perubahan style spacing
+    // Script tetap sama, hanya styling spacing tombol & code
   </script>
 </body>
 </html>
