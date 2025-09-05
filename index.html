@@ -114,9 +114,7 @@
           </div>
           <ul class="list">${(pkg.features||[]).map(f=>`<li>${escapeHtml(f)}</li>`).join('')}</ul>
           <div>
-            <span class="badge">Anti konten Judol</span>
-            <span class="badge">Anti konten Porn</span>
-            <span class="badge">Anti konten kekerasan</span>
+            ${(pkg.tags||[]).map(t=>`<span class="badge">${escapeHtml(t)}</span>`).join('')}
           </div>
           <div class="cta">
             <a class="btn" href="./order/${pkg.id}/">Order</a>
