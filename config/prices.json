@@ -30,7 +30,7 @@
       "policies": [
         "Revisi gratis 1x. Lebih dari itu dikenakan IDR 10.000/revisi.",
         "Revisi hanya berlaku untuk perubahan minor sesuai brief awal.",
-        "Revisi besar (ubah konsep, ganti musik total, ganti footage utama) dihitung biaya tambahan.",
+        "Revisi besar (ubah konsep, ganti musik total, ganti footage utama) dihitung biaya tambahan. IDR 10.000 - IDR 100.000 sesuai kerumitan brief revisi",
         "Brief tidak boleh berubah setelah proyek dimulai.",
         "Deadline dihitung setelah semua materi lengkap diterima.",
         "DP 30–50% diperlukan jika nilai proyek melebihi Rp300.000.",
@@ -63,7 +63,7 @@
       "policies": [
         "Revisi gratis 2x. Lebih dari itu dikenakan IDR 15.000/revisi.",
         "Revisi hanya berlaku untuk perubahan minor sesuai brief awal.",
-        "Revisi besar (ubah konsep, ganti musik total, ganti footage utama) dihitung biaya tambahan.",
+        "Revisi besar (ubah konsep, ganti musik total, ganti footage utama) dihitung biaya tambahan. IDR 15.000 - IDR 100.000 sesuai kerumitan brief revisi",
         "Brief tidak boleh berubah setelah proyek dimulai.",
         "Deadline dihitung setelah semua materi lengkap diterima.",
         "DP 30–50% diperlukan jika nilai proyek melebihi Rp300.000.",
@@ -95,7 +95,7 @@
       "policies": [
         "Revisi gratis 3x. Lebih dari itu dikenakan IDR 20.000/revisi.",
         "Revisi hanya berlaku untuk perubahan minor sesuai brief awal.",
-        "Revisi besar (ubah konsep, ganti musik total, ganti footage utama) dihitung biaya tambahan.",
+        "Revisi besar (ubah konsep, ganti musik total, ganti footage utama) dihitung biaya tambahan. IDR 20.000 - IDR 100.000 sesuai kerumitan brief revisi",
         "Brief tidak boleh berubah setelah proyek dimulai.",
         "Deadline dihitung setelah semua materi lengkap diterima.",
         "DP 30–50% diperlukan jika nilai proyek melebihi Rp300.000.",
@@ -108,3 +108,4 @@
     }
   ]
 }
+
