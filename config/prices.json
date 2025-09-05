@@ -31,7 +31,7 @@
     {
       "id": 2,
       "name": "Paket Standar",
-      "price": 50000,
+      "price": 70000,
       "revisions": 2,
       "durationText": "1–5 menit",
       "overRatePerMin": 12000,
@@ -69,4 +69,5 @@
     }
   ]
 }
+
 
