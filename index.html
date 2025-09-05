@@ -23,8 +23,10 @@
       padding:32px;
       display:flex;
       justify-content:center;
+      min-height:100vh;
+      flex-direction:column;
     }
-    .container{max-width:1100px;width:100%;display:flex;flex-direction:column;min-height:100vh}
+    .container{max-width:1100px;width:100%;flex:1;display:flex;flex-direction:column}
 
     header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
     .brand{display:flex;gap:12px;align-items:center}
@@ -42,11 +44,12 @@
       transform-style:preserve-3d;
       transition:transform 0.6s;
       border-radius:12px;
+      background:var(--card);
     }
     .card.flip{transform:rotateY(180deg)}
 
     .card-face{
-      background:var(--card); /* fix: card ga transparan lagi */
+      background:var(--card);
       border-radius:12px;
       padding:18px;
       box-shadow:0 6px 18px rgba(0,0,0,0.6);
@@ -79,7 +82,7 @@
 
     .back-btn{margin-top:12px;background:var(--detail);color:#fff;border:none;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px}
 
-    footer{margin-top:24px;color:var(--muted);font-size:13px;text-align:center;z-index:0}
+    footer{margin-top:24px;color:var(--muted);font-size:13px;text-align:center;z-index:0;flex-shrink:0}
 
     .rekom .card-face{border:2px solid var(--gold)!important;box-shadow:0 0 0 1px rgba(255,213,79,.3), 0 6px 18px rgba(255,213,79,.25)}
     .ribbon{position:absolute;top:14px;right:14px;background:linear-gradient(135deg, var(--gold), #e6b800);color:#2a2200;font-weight:700;padding:4px 8px;border-radius:999px;font-size:11px;z-index:2}
