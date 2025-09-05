@@ -84,75 +84,60 @@
     </footer>
   </main>
 
+  <script src="assets/pricing.js"></script>
   <script>
     async function loadPackages(){
-      let packages=[], promo={};
       try{
-        const res = await fetch('./config/prices.json',{cache:'no-store'});
-        if(res.ok) packages=(await res.json()).packages||[];
-      }catch(e){console.warn('prices.json fallback dipakai',e)}
-      if(!packages.length){
-        packages=[
-          {id:1,name:'Paket InstaClip',price:15000,revisions:1,durationText:'1–5 menit',leadTime:'0–1 hari',features:['cut basic','overlay sederhana','1 backsound']},
-          {id:2,name:'Paket Standar',price:50000,revisions:2,durationText:'1–5 menit',leadTime:'1–3 hari',features:['cut + merge kompleks','overlay + efek basic','2 backsound','transisi sederhana','efek teks','filter warna dasar']},
-          {id:3,name:'Paket Kreator',price:150000,revisions:3,durationText:'1–5 menit',leadTime:'3–5 hari',features:['editing kompleks','overlay variatif','5 backsound','transisi dinamis','efek teks animasi','color correction','sound design','motion graphics sederhana']}
-        ];
+        const {prices, promo} = await Pricing.loadConfig(".");
+        renderPackages(prices.packages, promo);
+      }catch(e){
+        console.error("Load config error:", e);
       }
-      try{
-        const promoRes = await fetch('./config/promo.json',{cache:'no-store'});
-        if(promoRes.ok) promo=await promoRes.json();
-      }catch(e){console.warn('promo.json tidak ditemukan',e)}
-      renderPackages(packages,promo);
     }
 
     function renderPackages(packages,promo){
       const container=document.getElementById('packages');
       container.innerHTML='';
-      packages.forEach(p=>{
+      packages.forEach(pkg=>{
+        const {normal, percent, final} = Pricing.getFinalPrice(pkg, promo);
+        const isRekom = checkRekom(promo, pkg.id);
+
         const el=document.createElement('article');
-        const isRekom = checkRekom(promo,p.id);
-        const discPct = getDiscount(promo,p.id);
-        const hasDisc = discPct>0;
-        const finalPrice = hasDisc? Math.round(p.price*(1-discPct/100)) : p.price;
         el.className='card'+(isRekom?' rekom':'');
 
         el.innerHTML=`
-          <h3>${escapeHtml(p.name)}</h3>
-          <div class="meta">Revisi: ${p.revisions} • Durasi: ${p.durationText} • Waktu: ${p.leadTime}</div>
+          <h3>${escapeHtml(pkg.name)}</h3>
+          <div class="meta">Revisi: ${pkg.revisions} • Durasi: ${pkg.durationText} • Waktu: ${pkg.leadTime}</div>
           <div class="price-box">
-            ${hasDisc?`<span class="old-price">IDR ${numberWithSeparators(p.price)}</span><span class="disc-badge">-${discPct}%</span>`:''}
-            <div class="price">IDR ${numberWithSeparators(finalPrice)}</div>
+            ${percent>0?`<span class="old-price">IDR ${numberWithSeparators(normal)}</span><span class="disc-badge">-${percent}%</span>`:''}
+            <div class="price">IDR ${numberWithSeparators(final)}</div>
           </div>
-          <ul class="list">${(p.features||[]).map(f=>`<li>${escapeHtml(f)}</li>`).join('')}</ul>
+          <ul class="list">${(pkg.features||[]).map(f=>`<li>${escapeHtml(f)}</li>`).join('')}</ul>
           <div>
             <span class="badge">Anti konten Judol</span>
             <span class="badge">Anti konten Porn</span>
             <span class="badge">Anti konten kekerasan</span>
           </div>
           <div class="cta">
-            <a class="btn" href="./order/${p.id}/">Order</a>
+            <a class="btn" href="./order/${pkg.id}/">Order</a>
           </div>
         `;
+
         if(isRekom){
           const ribbon=document.createElement('div');
           ribbon.className='ribbon';
           ribbon.textContent='Rekomendasi';
           el.appendChild(ribbon);
         }
+
         container.appendChild(el);
-      })
+      });
     }
 
     function checkRekom(promo,id){
       if(!promo||!promo.recommended) return false;
       if(Array.isArray(promo.recommended)) return promo.recommended.map(String).includes(String(id));
       return String(promo.recommended)===String(id);
-    }
-
-    function getDiscount(promo,id){
-      if(!promo||!promo.discounts) return 0;
-      const d = promo.discounts[String(id)];
-      return d&&d.percent? d.percent:0;
     }
 
     function numberWithSeparators(x){return x?.toString().replace(/\B(?=(\d{3})+(?!\d))/g,',')||'0'}
