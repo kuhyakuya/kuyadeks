@@ -6,7 +6,7 @@
   <title>Order — Kreator</title>
   <meta name="description" content="Form order paket Kreator. Hitung harga otomatis, validasi deadline realistis, buffer fee, generate order code, kirim ke WhatsApp." />
   <style>
-    :root{ --bg:#1D1D1D; --card:#232323; --accent:#FF0072; --muted:#bfc3c6; --glass: rgba(255,255,255,0.06); }
+    :root{ --bg:#1D1D1D; --card:#232323; --accent:#FF0072; --muted:#bfc3c6; --glass: rgba(255,255,255,0.06); --gold:#FFD54F; --gold-text:#2a2200; --disabled:#888888; }
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial; background:var(--bg); color:#fff; padding:24px; display:flex; justify-content:center}
     .container{max-width:900px; width:100%}
@@ -37,8 +37,9 @@
     .summary div{display:flex;justify-content:space-between;margin:6px 0;font-size:14px}
     .summary .total{font-weight:800;font-size:18px;margin-top:8px;border-top:1px dashed rgba(255,255,255,0.12);padding-top:8px}
 
-    .btn{background:var(--accent);color:white;padding:12px 16px;border-radius:10px;font-weight:700;cursor:pointer;text-decoration:none;border:0;display:inline-block;margin-bottom:16px}
-    .btn[disabled]{opacity:.4;cursor:not-allowed}
+    .btn{background:var(--accent);color:white;padding:12px 16px;border-radius:10px;font-weight:700;cursor:pointer;text-decoration:none;border:0;display:inline-block;transition:all .2s ease}
+    .btn.gold{background:var(--gold);color:var(--gold-text)}
+    .btn[disabled]{background:var(--disabled);color:#ccc;cursor:not-allowed;opacity:1}
 
     .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:var(--glass);font-size:12px;color:#fff;margin-top:12px}
     .muted{color:var(--muted)}
@@ -85,8 +86,8 @@
         </div>
         <div>
           <label for="note">Brief (catatan): * — minimal 80, maksimal 1200 karakter</label>
-          <textarea id="note" minlength="80" maxlength="1200" placeholder="Tulis brief jelas: bagian yang dipotong, style, efek, warna, mood, contoh referensi, dsb." required></textarea>
-          <div class="helper">Contoh: "Cut menit 00:10–00:50, overlay judul besar, transisi cepat, color warm, tambahkan beat drop di menit 00:30, tambahin subtitle animasi di bagian chorus."</div>
+          <textarea id="note" minlength="80" maxlength="1200" placeholder="Tulis brief jelas..." required></textarea>
+          <div class="helper">Contoh: "Cut menit 00:10–00:50, overlay judul besar, transisi cepat..."</div>
           <div id="noteErr" class="helper err" style="display:none">Brief terlalu pendek. Minimal 80 karakter.</div>
           <div id="noteCounter" class="counter">0 / 1200</div>
           <div id="noteWarn" class="warn-limit">⚠️ Hampir mencapai batas maksimal WhatsApp (1200 karakter)</div>
@@ -111,75 +112,40 @@
     </section>
   </main>
 
+  <script src="../../assets/pricing.js"></script>
   <script>
-    const PACKAGE_ID = 3; // Kreator
+    const PACKAGE_ID = 3;
     const RAND_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
-    const fmtIDR = n => 'IDR ' + (Number(n)||0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     function randCode(len=6){ let code=''; for(let i=0;i<len;i++){ code += RAND_CHARS[Math.floor(Math.random()*RAND_CHARS.length)]; } if(!(/[A-Z]/.test(code)&&/\d/.test(code))){ return randCode(len); } return code; }
     function addDays(date, days){ const d=new Date(date); d.setDate(d.getDate()+days); return d; }
     function nextDayStart(){ const d=new Date(); d.setDate(d.getDate()+1); d.setHours(0,0,0,0); return d; }
+    function isValidUrl(u){ try{ new URL(u); return true; }catch(e){ return false; } }
 
-    let pkg=null; let cfg=null;
-
-    function buildConfigCandidates(){
-      const path = window.location.pathname; // e.g. /repo/order/3/index.html
-      const candidates = [];
-      const orderIdx = path.indexOf('/order/');
-      if(orderIdx !== -1){
-        const base = path.slice(0, orderIdx); // "/repo"
-        candidates.push(`${base}/config/prices.json`);
-      }
-      candidates.push('../../config/prices.json'); // fallback relative
-      candidates.push('/config/prices.json');      // root
-      const seen = new Set();
-      return candidates.map(c=>c.replace(/\/+/, '/')).filter(c=>{ if(seen.has(c)) return false; seen.add(c); return true; });
-    }
-
-    async function loadConfig(){
-      const candidates = buildConfigCandidates();
-      let lastErr = null;
-      for(const url of candidates){
-        try{
-          console.log('Try config:', url);
-          const res = await fetch(url, {cache:'no-store'});
-          console.log('  status:', res.status);
-          if(res.ok){
-            console.log('Config loaded from:', url);
-            const json = await res.json();
-            json.__loadedFrom = url;
-            return json;
-          }
-        }catch(e){ lastErr = e; }
-      }
-      throw new Error('Gagal memuat config dari kandidat: '+candidates.join(', ') + (lastErr? (' | '+lastErr.message):''));
-    }
+    let pkg=null; let cfg=null; let promo=null;
 
     (async function init(){
       try{
-        cfg = await loadConfig();
-        console.log('Config loaded:', cfg);
-        if(!cfg || !Array.isArray(cfg.packages)) throw new Error('Config tidak valid: packages hilang');
-        // Debug table biar kelihatan ID apa aja
-        try { console.table(cfg.packages.map(p=>({id:p.id, name:p.name, price:p.price, over:p.overRatePerMin}))); } catch(e){}
+        const data = await Pricing.loadConfig("../..");
+        cfg = data.prices;
+        promo = data.promo;
+        pkg = cfg.packages.find(p=>Number(p.id)===Number(PACKAGE_ID));
+        if(!pkg) throw new Error("Paket tidak ditemukan");
 
-        const list = cfg.packages;
-        pkg = list.find(p=>Number(p.id)===Number(PACKAGE_ID));
-        if(!pkg){
-          console.error('Paket tidak ditemukan. ID tersedia:', list.map(p=>p.id));
-          throw new Error('Paket id '+PACKAGE_ID+' tidak ditemukan di config.');
-        }
+        document.getElementById('pkgName').textContent = pkg.name;
+        const {normal, percent, final} = Pricing.getFinalPrice(pkg, promo);
+        document.getElementById('sumBase').textContent = percent>0 ? `${Pricing.fmtIDR(final)} (diskon ${percent}%, normal ${Pricing.fmtIDR(normal)})` : Pricing.fmtIDR(normal);
 
-        document.getElementById('pkgName').textContent = `${pkg.name}`;
-        document.getElementById('sumBase').textContent = fmtIDR(pkg.price);
-
-        ['durasi','deadline','ref','note'].forEach(id=>{ document.getElementById(id).addEventListener('input',update); document.getElementById(id).addEventListener('change',update); });
+        ['durasi','deadline','ref','note'].forEach(id=>{
+          document.getElementById(id).addEventListener('input',update);
+          document.getElementById(id).addEventListener('change',update);
+        });
         document.getElementById('note').addEventListener('input',updateCounter);
         document.getElementById('btnOrder').addEventListener('click',onOrder);
         update();
       }catch(err){
         console.error('Init error:', err);
-        alert('Config error: '+err.message+'\nPastikan file config berada di /config/prices.json dan struktur JSON valid.');
+        alert('Config error: '+err.message);
       }
     })();
 
@@ -188,17 +154,6 @@
       const avgHoursPerDay = 5;
       return Math.ceil(requiredHours / avgHoursPerDay);
     }
-
-    function computeBufferPercent(durasi, map){
-      if(!map) return 0;
-      const keys = Object.keys(map).map(Number).sort((a,b)=>a-b);
-      let percent = 0;
-      for(const k of keys){ if(durasi > k) percent = Number(map[k])||0; }
-      return percent;
-    }
-
-    function numberWithSeparators(x){return (x??0).toString().replace(/\B(?=(\d{3})+(?!\d))/g,',')}
-    function isValidUrl(u){ try{ new URL(u); return true; }catch(e){ return false; } }
 
     function update(){
       if(!pkg) return;
@@ -218,10 +173,7 @@
         refInput.classList.add('invalid');
         refErr.style.display='block';
         refOK=false;
-      } else {
-        refInput.classList.remove('invalid');
-        refErr.style.display='none';
-      }
+      } else { refInput.classList.remove('invalid'); refErr.style.display='none'; }
 
       const workload = pkg.workloadPerMin || 0.5;
       const minDays = estimateMinDays(durasi, workload);
@@ -233,50 +185,28 @@
         document.getElementById('deadlineHelper').innerHTML = `Perhitungan dimulai <b>hari berikutnya sesuai jam kerja</b> setelah <b>file RAW diterima</b>.`;
       }
 
-      const overMin=Math.max(0,durasi-5);
-      const overRate=(pkg.overRatePerMin||0);
-      const overCost=overMin*overRate;
+      const calc = Pricing.calcTotal(pkg, cfg, promo, durasi, days);
 
-      const surPerc=(cfg.surcharge && cfg.surcharge[days])?Number(cfg.surcharge[days]):0;
-      const subTotal=(pkg.price||0)+overCost;
-      const surchargeVal=Math.round(subTotal*(surPerc/100));
-      let total=subTotal+surchargeVal;
+      document.getElementById('sumOver').textContent=`${calc.overMin} mnt × ${Pricing.fmtIDR(calc.overRate)} = ${Pricing.fmtIDR(calc.overCost)}`;
+      document.getElementById('sumSurcharge').textContent=`+${calc.surPerc}% = ${Pricing.fmtIDR(calc.surchargeVal)}`;
+      document.getElementById('sumBuffer').textContent=`+${calc.bufPerc}% = ${Pricing.fmtIDR(calc.bufVal)}`;
+      document.getElementById('sumTotal').textContent=Pricing.fmtIDR(calc.total);
+      document.getElementById('eta').textContent=addDays(nextDayStart(),days-1).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 
-      const bufPerc = computeBufferPercent(durasi, cfg.bufferFee);
-      const bufVal = Math.round(total * (bufPerc/100));
-      total += bufVal;
-
-      const eta=addDays(nextDayStart(),days-1);
-      const etaText=eta.toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
-
-      document.getElementById('sumOver').textContent=`${overMin} mnt × IDR ${numberWithSeparators(overRate)} = ${fmtIDR(overCost)}`;
-      document.getElementById('sumSurcharge').textContent=`+${surPerc}% = ${fmtIDR(surchargeVal)}`;
-      document.getElementById('sumBuffer').textContent=`+${bufPerc}% = ${fmtIDR(bufVal)}`;
-      document.getElementById('sumTotal').textContent=fmtIDR(total);
-      document.getElementById('eta').textContent=`${etaText} (mulai sesuai jam kerja, setelah file RAW diterima)`;
-
-      const durasi2=String(durasi).padStart(2,'0');
-      const days2=String(days).padStart(2,'0')+'h';
-      const code=`DDHP-r${durasi2}.${days2}.${total}.p${pkg.id}-${randCode(6)}`;
+      const code=`DDHP-r${String(durasi).padStart(2,'0')}.${String(days).padStart(2,'0')}h.${calc.total}.p${pkg.id}-${randCode(6)}`;
       document.getElementById('orderCode').textContent=code;
 
-      const phoneOK=!!(cfg.whatsapp&&/^(\d{9,15})$/.test(String(cfg.whatsapp)));
+      const phoneOK=!!(cfg.whatsapp&&/^\d{9,15}$/.test(String(cfg.whatsapp)));
       const formOK=durasi>=1&&days>=1&&noteOK&&refOK&&phoneOK;
       const btn=document.getElementById('btnOrder');
       btn.disabled=!formOK;
-      btn.dataset.total=total;
+      btn.classList.toggle('gold', calc.discountPercent>0 && !btn.disabled);
+      btn.dataset.calc=JSON.stringify(calc);
+      btn.dataset.note=note;
+      btn.dataset.ref=ref;
       btn.dataset.code=code;
       btn.dataset.durasi=durasi;
       btn.dataset.days=days;
-      btn.dataset.ref=ref;
-      btn.dataset.note=note;
-      btn.dataset.overMin=overMin;
-      btn.dataset.overRate=overRate;
-      btn.dataset.over=overCost;
-      btn.dataset.surcharge=surchargeVal;
-      btn.dataset.surPerc=surPerc;
-      btn.dataset.buffer=bufVal;
-      btn.dataset.bufPerc=bufPerc;
     }
 
     function updateCounter(){
@@ -289,6 +219,7 @@
 
     function onOrder(){
       const btn=document.getElementById('btnOrder');
+      const calc=JSON.parse(btn.dataset.calc);
       const phone=String(cfg.whatsapp);
       const msg=[
         `*Paket:* ${pkg.name}`,
@@ -296,11 +227,13 @@
         `*Deadline:* ${btn.dataset.days} hari (mulai sesuai jam kerja, setelah file RAW diterima)`,
         '',
         `*Ringkasan>*`,
-        `> Base price: ${fmtIDR(pkg.price)}`,
-        `> Overtime: ${btn.dataset.overMin} mnt × ${fmtIDR(btn.dataset.overRate)} = ${fmtIDR(btn.dataset.over)}`,
-        `> Deadline surcharge: +${btn.dataset.surPerc}% = ${fmtIDR(btn.dataset.surcharge)}`,
-        `> Buffer fee: +${btn.dataset.bufPerc}% = ${fmtIDR(btn.dataset.buffer)}`,
-        `> Total: ${fmtIDR(Number(btn.dataset.total))}`,
+        `> Harga normal: ${Pricing.fmtIDR(calc.normal)}`,
+        calc.discountPercent>0?`> Diskon ${calc.discountPercent}%: -${Pricing.fmtIDR(calc.normal-calc.baseFinal)}`:null,
+        `> Base price: ${Pricing.fmtIDR(calc.baseFinal)}`,
+        `> Overtime: ${calc.overMin} mnt × ${Pricing.fmtIDR(calc.overRate)} = ${Pricing.fmtIDR(calc.overCost)}`,
+        `> Deadline surcharge: +${calc.surPerc}% = ${Pricing.fmtIDR(calc.surchargeVal)}`,
+        `> Buffer fee: +${calc.bufPerc}% = ${Pricing.fmtIDR(calc.bufVal)}`,
+        `> Total: ${Pricing.fmtIDR(calc.total)}`,
         '',
         btn.dataset.ref?`*Referensi:* ${btn.dataset.ref}`:null,
         `*Brief:* ${btn.dataset.note}`,
