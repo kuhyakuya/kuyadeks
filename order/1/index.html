@@ -240,7 +240,9 @@
         `> Overtime: ${calc.overMin} mnt × ${Pricing.fmtIDR(calc.overRate)} = ${Pricing.fmtIDR(calc.overCost)}`,
         `> Deadline surcharge: +${calc.surPerc}% = ${Pricing.fmtIDR(calc.surchargeVal)}`,
         `> Buffer fee: +${calc.bufPerc}% = ${Pricing.fmtIDR(calc.bufVal)}`,
-        `> Total: ${Pricing.fmtIDR(calc.total)}`,
+        `> Buffer fee: +${calc.bufPerc}% = ${Pricing.fmtIDR(calc.bufVal)}`,
+        `> ${Pricing.fmtIDR(calc.baseFinal)} + ${Pricing.fmtIDR(calc.overCost)} + ${Pricing.fmtIDR(calc.surchargeVal)} + ${Pricing.fmtIDR(calc.bufVal)}`,
+        `> Total: *${Pricing.fmtIDR(calc.total)}*`,
         '',
         btn.dataset.ref?`*Referensi:* ${btn.dataset.ref}`:null,
         `*Brief:* ${btn.dataset.note}`,
@@ -253,6 +255,7 @@
   </script>
 </body>
 </html>
+
 
 
 
