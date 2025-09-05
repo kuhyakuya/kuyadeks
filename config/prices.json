@@ -24,7 +24,8 @@
         "cut basic",
         "overlay sederhana",
         "1 backsound"
-      ]
+      ],
+      "tags": ["Konten TikTok/Reels", "Highlight Gaming", "Video pendek promosi"]
     },
     {
       "id": 2,
@@ -42,7 +43,8 @@
         "transisi sederhana",
         "efek teks",
         "filter warna dasar"
-      ]
+      ],
+      "tags": ["Konten YouTube", "Vlog", "Video Edukasi"]
     },
     {
       "id": 3,
@@ -62,10 +64,8 @@
         "color correction",
         "sound design",
         "motion graphics sederhana"
-      ]
+      ],
+      "tags": ["Iklan Produk", "Cinematic", "Motion Graphics", "Video Musik"]
     }
   ]
 }
-
-
-
