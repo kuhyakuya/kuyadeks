@@ -260,7 +260,7 @@
         `*Durasi:* ${btn.dataset.durasi} menit`,
         `*Deadline:* ${btn.dataset.days} hari (mulai sesuai jam kerja, setelah file RAW diterima)`,
         '',
-        `*Ringkasan>*`,
+        `*Ringkasa:*`,
         `> Base price: ${fmtIDR(pkg.price)}`,
         `> Overtime: ${btn.dataset.overMin} mnt × ${fmtIDR(btn.dataset.overRate)} = ${fmtIDR(btn.dataset.over)}`,
         `> Deadline surcharge: +${btn.dataset.surPerc}% = ${fmtIDR(btn.dataset.surcharge)}`,
@@ -269,6 +269,7 @@
         '',
         btn.dataset.ref?`*Referensi:* ${btn.dataset.ref}`:null,
         `*Brief:* ${btn.dataset.note}`,
+         '',
         `*Order Code:* ${btn.dataset.code}`
       ].filter(Boolean).join('\n');
 
