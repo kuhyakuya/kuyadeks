@@ -13,6 +13,7 @@
       --muted:#bfc3c6;
       --glass: rgba(255,255,255,0.03);
       --gold:#FFD54F;
+      --gold-text:#2a2200;
     }
     *{box-sizing:border-box;margin:0;padding:0}
     body{
@@ -22,8 +23,10 @@
       padding:32px;
       display:flex;
       justify-content:center;
+      min-height:100vh;
+      flex-direction:column;
     }
-    .container{max-width:1100px;width:100%}
+    .container{max-width:1100px;width:100%;margin:auto}
 
     header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
     .brand{display:flex;gap:12px;align-items:center}
@@ -33,34 +36,12 @@
 
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
 
-    .card-wrapper{perspective:1000px}
-    .card{
-      background:transparent;
-      border-radius:12px;
-      position:relative;
-      width:100%;
-      height:100%;
-      transform-style:preserve-3d;
-      transition:transform 0.6s;
-    }
-    .card.flip{transform:rotateY(180deg)}
+    .flip-card{perspective:1000px;position:relative}
+    .flip-inner{position:relative;width:100%;height:100%;transition:transform .6s;transform-style:preserve-3d}
+    .flip-card.flipped .flip-inner{transform:rotateY(180deg)}
 
-    .card-face{
-      background:var(--card);
-      border-radius:12px;
-      padding:18px;
-      box-shadow:0 6px 18px rgba(0,0,0,0.6);
-      border:2px solid rgba(255,255,255,0.05);
-      position:absolute;
-      width:100%;
-      backface-visibility:hidden;
-      top:0;left:0;
-      min-height:300px;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-    }
-    .card-front h3{font-size:16px;margin-bottom:4px}
+    .card{background:var(--card);border-radius:12px;padding:18px;box-shadow:0 6px 18px rgba(0,0,0,0.6);border:2px solid rgba(255,255,255,0.05);display:flex;flex-direction:column;justify-content:space-between;position:relative;min-height:360px}
+    .card h3{font-size:16px;margin-bottom:4px}
     .price-box{margin:10px 0}
     .old-price{font-size:12px;color:var(--muted);text-decoration:line-through;display:inline-block;margin-right:6px}
     .disc-badge{display:inline-block;background:var(--accent);color:#fff;font-size:11px;padding:2px 6px;border-radius:6px;vertical-align:middle}
@@ -69,19 +50,21 @@
     .list{margin:12px 0 16px;padding-left:18px;color:var(--muted);font-size:14px}
     .badge{display:inline-block;background:var(--glass);padding:4px 10px;border-radius:999px;font-size:12px;color:var(--muted);margin-right:6px;margin-top:4px}
 
-    .cta{text-align:right;margin-top:auto}
-    .btn{background:var(--accent);color:white;padding:8px 12px;border-radius:10px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block;font-size:13px}
-
-    .card-back{transform:rotateY(180deg);text-align:left;font-size:13px;line-height:1.5}
-    .card-back h4{margin-bottom:10px;font-size:15px;color:var(--gold)}
-    .card-back ul{padding-left:18px;color:var(--muted)}
-
-    .back-btn{margin-top:12px;background:var(--accent);color:#fff;border:none;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px}
+    .cta{margin-top:auto;text-align:right;display:flex;gap:8px;justify-content:flex-end}
+    .btn{background:var(--accent);color:white;padding:10px 14px;border-radius:10px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block;transition:all .2s ease}
+    .btn.secondary{background:var(--glass);color:var(--muted);font-weight:500}
 
     footer{margin-top:24px;color:var(--muted);font-size:13px;text-align:center}
 
-    .rekom{border:2px solid var(--gold)!important;box-shadow:0 0 0 1px rgba(255,213,79,.3), 0 6px 18px rgba(255,213,79,.25)}
-    .ribbon{position:absolute;top:14px;right:14px;background:linear-gradient(135deg, var(--gold), #e6b800);color:#2a2200;font-weight:700;padding:4px 8px;border-radius:999px;font-size:11px}
+    /* highlight rekomendasi */
+    .rekom .card{border:2px solid var(--gold)!important;box-shadow:0 0 0 1px rgba(255,213,79,.3), 0 6px 18px rgba(255,213,79,.25)}
+    .ribbon{position:absolute;top:14px;right:14px;background:linear-gradient(135deg, var(--gold), #e6b800);color:var(--gold-text);font-weight:700;padding:4px 8px;border-radius:999px;font-size:11px;z-index:2}
+
+    /* flip back */
+    .flip-front,.flip-back{position:absolute;width:100%;height:100%;backface-visibility:hidden;top:0;left:0;border-radius:12px;padding:18px;display:flex;flex-direction:column;justify-content:space-between}
+    .flip-back{transform:rotateY(180deg);background:var(--card);border:2px solid rgba(255,255,255,0.05);box-shadow:0 6px 18px rgba(0,0,0,0.6)}
+    .flip-back h4{font-size:15px;margin-bottom:10px}
+    .flip-back ul{font-size:13px;color:var(--muted);padding-left:18px}
 
     @media (max-width:560px){
       body{padding:18px}
@@ -131,11 +114,12 @@
         const {normal, percent, final} = Pricing.getFinalPrice(pkg, promo);
         const isRekom = checkRekom(promo, pkg.id);
 
-        const wrapper=document.createElement('div');
-        wrapper.className='card-wrapper';
-        wrapper.innerHTML=`
-          <div class="card${isRekom?' rekom':''}">
-            <div class="card-face card-front">
+        const flip=document.createElement('div');
+        flip.className='flip-card'+(isRekom?' rekom':'');
+        flip.innerHTML=`
+          ${isRekom?`<div class='ribbon'>Rekomendasi</div>`:''}
+          <div class="flip-inner">
+            <div class="flip-front card">
               <h3>${escapeHtml(pkg.name)}</h3>
               <div class="meta">Revisi: ${pkg.revisions} • Durasi: ${pkg.durationText} • Waktu: ${pkg.leadTime}</div>
               <div class="price-box">
@@ -146,28 +130,23 @@
               <div>${(pkg.tags||[]).map(t=>`<span class="badge">${escapeHtml(t)}</span>`).join('')}</div>
               <div class="cta">
                 <a class="btn" href="./order/${pkg.id}/">Order</a>
-                <button class="btn flip-btn" type="button">Detail</button>
+                <button class="btn secondary detail-btn">Detail</button>
               </div>
             </div>
-            <div class="card-face card-back">
+            <div class="flip-back">
               <h4>Kebijakan</h4>
-              <ul>${(pkg.policies||["Tidak ada kebijakan tambahan"]).map(p=>`<li>${escapeHtml(p)}</li>`).join('')}</ul>
-              <button class="back-btn">← Kembali</button>
+              <ul>${(pkg.policies||["Belum ada kebijakan."]).map(p=>`<li>${escapeHtml(p)}</li>`).join('')}</ul>
+              <div class="cta">
+                <button class="btn secondary back-btn">← Kembali</button>
+              </div>
             </div>
           </div>`;
 
-        const card=wrapper.querySelector('.card');
-        wrapper.querySelector('.flip-btn').addEventListener('click',()=>card.classList.add('flip'));
-        wrapper.querySelector('.back-btn').addEventListener('click',()=>card.classList.remove('flip'));
+        container.appendChild(flip);
 
-        if(isRekom){
-          const ribbon=document.createElement('div');
-          ribbon.className='ribbon';
-          ribbon.textContent='Rekomendasi';
-          card.appendChild(ribbon);
-        }
-
-        container.appendChild(wrapper);
+        const inner=flip.querySelector('.flip-inner');
+        flip.querySelector('.detail-btn').addEventListener('click',()=>flip.classList.add('flipped'));
+        flip.querySelector('.back-btn').addEventListener('click',()=>flip.classList.remove('flipped'));
       });
     }
 
