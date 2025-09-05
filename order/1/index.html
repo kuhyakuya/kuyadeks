@@ -226,6 +226,9 @@
       document.getElementById('btnOrder').dataset.days=days;
       document.getElementById('btnOrder').dataset.ref=ref;
       document.getElementById('btnOrder').dataset.note=note;
+      document.getElementById('btnOrder').dataset.over=overCost;
+      document.getElementById('btnOrder').dataset.surcharge=surchargeVal;
+      document.getElementById('btnOrder').dataset.buffer=bufVal;
     }
 
     function updateCounter(){
@@ -243,17 +246,14 @@
         `*Paket:* ${pkg.name}`,
         `*Durasi:* ${btn.dataset.durasi} menit`,
         `*Deadline:* ${btn.dataset.days} hari (mulai sesuai jam kerja, setelah file RAW diterima)` ,
-        `*Harga:* ${fmtIDR(Number(btn.dataset.total))}`,
+        "",
+        "*Ringkasan>*",
+        `> Base price: ${fmtIDR(pkg.price)}`,
+        `> Overtime: ${btn.dataset.over} mnt × ${fmtIDR(pkg.overRatePerMin||0)} = ${fmtIDR(btn.dataset.over)}`,
+        `> Deadline surcharge: ${fmtIDR(btn.dataset.surcharge)}`,
+        `> Buffer fee: ${fmtIDR(btn.dataset.buffer)}`,
+        `> Total: ${fmtIDR(Number(btn.dataset.total))}`,
+        "",
         btn.dataset.ref?`*Referensi:* ${btn.dataset.ref}`:null,
         `*Brief:* ${btn.dataset.note}`,
         `*Order Code:* ${btn.dataset.code}`
-      ].filter(Boolean).join('\n');
-      const url=`https://wa.me/${phone}?text=`+encodeURIComponent(msg);
-      window.location.href=url;
-    }
-
-    function numberWithSeparators(x){return (x??0).toString().replace(/\B(?=(\d{3})+(?!\d))/g,',')}
-    function isValidUrl(u){ try{ new URL(u); return true; }catch(e){ return false; } }
-  </script>
-</body>
-</html>
