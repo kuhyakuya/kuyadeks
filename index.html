@@ -38,8 +38,9 @@
     .card{background:var(--card);border-radius:12px;padding:18px;box-shadow:0 6px 18px rgba(0,0,0,0.6);border:2px solid rgba(255,255,255,0.05);display:flex;flex-direction:column;justify-content:space-between;position:relative}
     .card h3{font-size:16px;margin-bottom:4px}
     .price-box{margin:10px 0}
-    .old-price{font-size:12px;color:var(--muted);text-decoration:line-through;display:block;margin-bottom:2px}
-    .price{font-weight:700;font-size:20px}
+    .old-price{font-size:12px;color:var(--muted);text-decoration:line-through;display:inline-block;margin-right:6px}
+    .disc-badge{display:inline-block;background:var(--accent);color:#fff;font-size:11px;padding:2px 6px;border-radius:6px;vertical-align:middle}
+    .price{font-weight:700;font-size:20px;margin-top:2px}
     .meta{color:var(--muted);font-size:13px}
     .list{margin:12px 0 16px;padding-left:18px;color:var(--muted);font-size:14px}
     .badge{display:inline-block;background:var(--glass);padding:4px 10px;border-radius:999px;font-size:12px;color:var(--muted);margin-right:6px;margin-top:4px}
@@ -51,16 +52,12 @@
 
     /* highlight rekomendasi */
     .rekom{border:2px solid var(--gold)!important;box-shadow:0 0 0 1px rgba(255,213,79,.3), 0 6px 18px rgba(255,213,79,.25)}
-    .ribbon{position:absolute;top:14px;right:14px;background:linear-gradient(135deg, var(--gold), #e6b800);color:#2a2200;font-weight:700;padding:4px 8px;border-radius:999px;font-size:11px;transform:rotate(0deg)}
+    .ribbon{position:absolute;top:14px;right:14px;background:linear-gradient(135deg, var(--gold), #e6b800);color:#2a2200;font-weight:700;padding:4px 8px;border-radius:999px;font-size:11px}
 
-    /* mobile adaptasi badge diskon */
-    .disc-chip{display:none;margin-bottom:6px;background:var(--accent);color:#fff;padding:2px 8px;border-radius:6px;font-size:11px;width:max-content}
     @media (max-width:560px){
       body{padding:18px}
       .logo img{width:40px;height:40px}
       h1{font-size:16px}
-      .ribbon{display:none}
-      .disc-chip{display:inline-block}
     }
   </style>
 </head>
@@ -120,11 +117,10 @@
         el.className='card'+(isRekom?' rekom':'');
 
         el.innerHTML=`
-          ${hasDisc?`<div class="disc-chip">-${discPct}%</div>`:''}
           <h3>${escapeHtml(p.name)}</h3>
           <div class="meta">Revisi: ${p.revisions} • Durasi: ${p.durationText} • Waktu: ${p.leadTime}</div>
           <div class="price-box">
-            ${hasDisc?`<span class="old-price">IDR ${numberWithSeparators(p.price)}</span>`:''}
+            ${hasDisc?`<span class="old-price">IDR ${numberWithSeparators(p.price)}</span><span class="disc-badge">-${discPct}%</span>`:''}
             <div class="price">IDR ${numberWithSeparators(finalPrice)}</div>
           </div>
           <ul class="list">${(p.features||[]).map(f=>`<li>${escapeHtml(f)}</li>`).join('')}</ul>
@@ -142,12 +138,6 @@
           ribbon.className='ribbon';
           ribbon.textContent='Rekomendasi';
           el.appendChild(ribbon);
-        }
-        if(hasDisc){
-          const badge=document.createElement('div');
-          badge.className='ribbon';
-          badge.textContent=`-${discPct}%`;
-          el.appendChild(badge);
         }
         container.appendChild(el);
       })
