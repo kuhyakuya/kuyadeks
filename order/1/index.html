@@ -154,6 +154,12 @@
       }
     })();
 
+    function estimateMinDays(durasi, workloadPerMin){
+      const requiredHours = durasi * (workloadPerMin || 0.5);
+      const avgHoursPerDay = 5;
+      return Math.ceil(requiredHours / avgHoursPerDay);
+    }
+
     function update(){
       if(!pkg) return;
       const durasi=Math.max(1,parseInt(document.getElementById('durasi').value||0,10));
@@ -174,11 +180,15 @@
         refOK=false;
       } else { refInput.classList.remove('invalid'); refErr.style.display='none'; }
 
-      const minDays = 1; // simplified, bisa pakai workload kalau perlu
+      // Gunakan workloadPerMin untuk validasi minimal hari
+      const workload = pkg.workloadPerMin || 0.5;
+      const minDays = estimateMinDays(durasi, workload);
       if(days < minDays){
         days = minDays;
         document.getElementById('deadline').value = minDays;
-        document.getElementById('deadlineHelper').innerHTML = `<span class='warn'>Deadline disesuaikan ke minimum ${minDays} hari.</span>`;
+        document.getElementById('deadlineHelper').innerHTML = `<span class='warn'>Deadline disesuaikan ke minimum ${minDays} hari (durasi terlalu panjang).</span>`;
+      } else {
+        document.getElementById('deadlineHelper').innerHTML = `Perhitungan dimulai <b>hari berikutnya sesuai jam kerja</b> setelah <b>file RAW diterima</b>.`;
       }
 
       const calc = Pricing.calcTotal(pkg, cfg, promo, durasi, days);
