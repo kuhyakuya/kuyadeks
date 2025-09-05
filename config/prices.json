@@ -22,8 +22,9 @@
       "workloadPerMin": 0.5,
       "features": [
         "cut basic",
-        "overlay sederhana",
-        "1 backsound"
+        "overlay & sederhana",
+        "add backsound",
+        "Gratis Revisi 1x"
       ],
       "tags": ["Konten TikTok/Reels", "Highlight Gaming", "Video pendek promosi"]
     },
@@ -39,10 +40,11 @@
       "features": [
         "cut + merge kompleks",
         "overlay + efek basic",
-        "2 backsound",
+        "add backsound bervariasi",
         "transisi sederhana",
-        "efek teks",
-        "filter warna dasar"
+        "add teks subtitle",
+        "filter warna dasar",
+        "Gratis Revisi 2x"
       ],
       "tags": ["Konten YouTube", "Vlog", "Video Edukasi"]
     },
@@ -57,15 +59,14 @@
       "workloadPerMin": 3,
       "features": [
         "editing kompleks",
-        "overlay variatif",
-        "5 backsound",
         "transisi dinamis",
         "efek teks animasi",
         "color correction",
-        "sound design",
-        "motion graphics sederhana"
+        "motion graphics sederhana",
+        "Gratis Revisi 3x"
       ],
       "tags": ["Iklan Produk", "Cinematic", "Motion Graphics", "Video Musik"]
     }
   ]
 }
+
