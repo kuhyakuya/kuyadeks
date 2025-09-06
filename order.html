@@ -147,6 +147,11 @@
 
     function addDays(date, days){ const d=new Date(date); d.setDate(d.getDate()+days); return d; }
     function nextDayStart(){ const d=new Date(); d.setDate(d.getDate()+1); d.setHours(0,0,0,0); return d; }
+    function estimateMinDays(durasi, workloadPerMin){
+      const requiredHours = durasi * (workloadPerMin || 0.5);
+      const avgHoursPerDay = 5;
+      return Math.ceil(requiredHours / avgHoursPerDay);
+    }
 
     function update(){
       if(!pkg) return;
@@ -166,6 +171,16 @@
       let refOK=true;
       try{ if(ref && !new URL(ref)){ refOK=false; } }catch{ if(ref){ refOK=false; } }
       if(!refOK){ refInput.classList.add("invalid"); refErr.style.display='block'; } else { refInput.classList.remove("invalid"); refErr.style.display='none'; }
+
+      // Validasi minimum deadline berdasarkan workloadPerMin
+      const minDays = estimateMinDays(durasi, pkg.workloadPerMin);
+      if(days < minDays){
+        days = minDays;
+        document.getElementById("deadline").value = minDays;
+        document.getElementById("deadlineHelper").innerHTML = `<span class='warn'>Deadline disesuaikan ke minimum ${minDays} hari (durasi terlalu panjang).</span>`;
+      } else {
+        document.getElementById("deadlineHelper").innerHTML = `Perhitungan dimulai <b>hari berikutnya sesuai jam kerja</b> setelah <b>file RAW diterima</b>.`;
+      }
 
       const calc=Pricing.calcTotal(pkg,cfg,promo,durasi||0,days||0);
       document.getElementById("sumBase").textContent=Pricing.fmtIDR(calc.baseFinal);
@@ -222,8 +237,3 @@
       ].filter(Boolean).join('\n');
 
       const url="https://wa.me/"+phone+"?text="+encodeURIComponent(msg);
-      window.location.href=url;
-    }
-  </script>
-</body>
-</html>
