@@ -37,17 +37,17 @@
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
 
     .card{
-      background:var(--card);
       border-radius:12px;
       overflow:hidden;
       transition:height 0.3s ease;
     }
 
     .card-face{
+      background:var(--card);
+      border-radius:12px;
       padding:18px;
       box-shadow:0 6px 18px rgba(0,0,0,0.6);
       border:2px solid rgba(255,255,255,0.05);
-      border-radius:12px;
       transform-origin:center center;
       transition:transform var(--flip-duration) ease, opacity var(--flip-duration) ease;
     }
