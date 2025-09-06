@@ -112,7 +112,6 @@
     </section>
   </main>
 
-  <script src="assets/pricing.js"></script>
   <script>
     const RAND_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     function randCode(len=6){ let code=''; for(let i=0;i<len;i++){ code+=RAND_CHARS[Math.floor(Math.random()*RAND_CHARS.length)]; } return code; }
@@ -126,8 +125,10 @@
 
     (async function init(){
       try{
-        const data=await Pricing.loadConfig(".");
-        cfg=data.prices; promo=data.promo;
+        const res = await fetch("assets/prices.json");
+        if(!res.ok) throw new Error("Gagal load prices.json");
+        const data = await res.json();
+        cfg=data; promo=data.promo;
         const id=getQueryId();
         pkg=cfg.packages.find(p=>Number(p.id)===id);
         if(!pkg) throw new Error("Paket tidak ditemukan");
@@ -160,19 +161,16 @@
       const note=document.getElementById("note").value.trim();
       const ref=document.getElementById("ref").value.trim();
 
-      // Validasi catatan minimal 80 karakter
       const noteErr=document.getElementById("noteErr");
       const noteOK=note.length>=80;
       noteErr.style.display=noteOK?"none":"block";
 
-      // Validasi URL
       const refInput=document.getElementById("ref");
       const refErr=document.getElementById("refErr");
       let refOK=true;
       try{ if(ref && !new URL(ref)){ refOK=false; } }catch{ if(ref){ refOK=false; } }
       if(!refOK){ refInput.classList.add("invalid"); refErr.style.display='block'; } else { refInput.classList.remove("invalid"); refErr.style.display='none'; }
 
-      // Validasi minimum deadline berdasarkan workloadPerMin
       const minDays = estimateMinDays(durasi, pkg.workloadPerMin);
       if(days < minDays){
         days = minDays;
@@ -237,3 +235,9 @@
       ].filter(Boolean).join('\n');
 
       const url="https://wa.me/"+phone+"?text="+encodeURIComponent(msg);
+      window.location.href=url;
+    }
+  </script>
+  <script src="assets/pricing.js"></script>
+</body>
+</html>
