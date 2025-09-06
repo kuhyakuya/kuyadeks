@@ -121,7 +121,6 @@
 
     (async function init(){
       try{
-        // ✅ FIX: sekarang order.html di root → cukup "." untuk akses /config/*
         const data = await Pricing.loadConfig(".");
         cfg = data.prices;
         promo = data.promo;
@@ -183,7 +182,15 @@
 
       const calc = Pricing.calcTotal(pkg, cfg, promo, durasi, days);
 
-      document.getElementById('sumBase').textContent=Pricing.fmtIDR(calc.baseFinal);
+      if (calc.discountPercent > 0) {
+        document.getElementById('sumBase').innerHTML = `
+          ${Pricing.fmtIDR(calc.baseFinal)} <span class="muted">(-${calc.discountPercent}%)</span><br>
+          <s style="font-size:12px;color:var(--muted)">${Pricing.fmtIDR(calc.normal)}</s>
+        `;
+      } else {
+        document.getElementById('sumBase').textContent = Pricing.fmtIDR(calc.baseFinal);
+      }
+
       document.getElementById('sumOver').textContent=`${calc.overMin} mnt × ${Pricing.fmtIDR(calc.overRate)} = ${Pricing.fmtIDR(calc.overCost)}`;
       document.getElementById('sumSurcharge').textContent=`+${calc.surPerc}% = ${Pricing.fmtIDR(calc.surchargeVal)}`;
       document.getElementById('sumBuffer').textContent=`+${calc.bufPerc}% = ${Pricing.fmtIDR(calc.bufVal)}`;
@@ -193,7 +200,7 @@
       const code=`ORD-r${String(durasi).padStart(2,'0')}.${String(days).padStart(2,'0')}h.${calc.total}.p${pkg.id}-${randCode(6)}`;
       document.getElementById('orderCode').textContent=code;
 
-      const phoneOK=!!(cfg.whatsapp&&/^\d{9,15}$/.test(String(cfg.whatsapp)));
+      const phoneOK=!!(cfg.whatsapp&&/^[\d]{9,15}$/.test(String(cfg.whatsapp)));
       const formOK=durasi>=1&&days>=1&&noteOK&&refOK&&phoneOK;
       const btn=document.getElementById('btnOrder');
       btn.disabled=!formOK;
