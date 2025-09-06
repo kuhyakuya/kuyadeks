@@ -14,6 +14,8 @@
       --glass: rgba(255,255,255,0.03);
       --gold:#FFD54F;
       --detail:#555;
+      --flip-duration:250ms;
+      --height-duration:300ms;
     }
     *{box-sizing:border-box;margin:0;padding:0}
     body{
@@ -42,6 +44,7 @@
       border-radius: 12px;
       background: var(--card);
       overflow:hidden;
+      transition: height var(--height-duration) ease;
     }
 
     .card-face{
@@ -52,15 +55,28 @@
     }
 
     .card-front, .card-back {
-      transition: transform 0.3s ease, opacity 0.3s ease;
+      transition: transform var(--flip-duration) ease, opacity var(--flip-duration) ease;
       transform-origin: center center;
     }
 
-    .card-back { display:none; }
-    .card.flipping .card-front { transform:scaleX(0); opacity:0; }
-    .card.flipping .card-back { display:block; transform:scaleX(0); opacity:0; }
-    .card.show-back .card-back { display:block; transform:scaleX(1); opacity:1; }
-    .card.show-back .card-front { display:none; }
+    .card-back {
+      visibility:hidden;
+      opacity:0;
+      transform:scaleX(0);
+      position:relative;
+    }
+    .card.show-back .card-front {
+      visibility:hidden;
+      opacity:0;
+      transform:scaleX(0);
+      position:absolute;
+      top:0;left:0;width:100%;
+    }
+    .card.show-back .card-back {
+      visibility:visible;
+      opacity:1;
+      transform:scaleX(1);
+    }
 
     .card-front h3{font-size:16px;margin-bottom:4px}
     .price-box{margin:10px 0}
@@ -139,6 +155,9 @@
       },500);
     },5000);
 
+    const FLIP_DURATION=250;
+    const HEIGHT_DURATION=300;
+
     async function loadPackages(){
       try{
         const {prices, promo} = await Pricing.loadConfig(".");
@@ -158,26 +177,26 @@
         const wrapper=document.createElement('div');
         wrapper.className='card-wrapper';
         wrapper.innerHTML=`
-          <div class=\"card${isRekom?' rekom':''}\">
-            <div class=\"card-face card-front\">
-              ${isRekom?'<div class=\"ribbon\">Rekomendasi</div>':''}
+          <div class="card${isRekom?' rekom':''}">
+            <div class="card-face card-front">
+              ${isRekom?'<div class="ribbon">Rekomendasi</div>':''}
               <h3>${escapeHtml(pkg.name)}</h3>
-              <div class=\"meta\">Revisi: ${pkg.revisions} • Durasi: ${pkg.durationText} • Waktu: ${pkg.leadTime}</div>
-              <div class=\"price-box\">
-                ${percent>0?`<span class=\"old-price\">IDR ${numberWithSeparators(normal)}</span><span class=\"disc-badge\">-${percent}%</span>`:''}
-                <div class=\"price\">IDR ${numberWithSeparators(final)}</div>
+              <div class="meta">Revisi: ${pkg.revisions} • Durasi: ${pkg.durationText} • Waktu: ${pkg.leadTime}</div>
+              <div class="price-box">
+                ${percent>0?`<span class="old-price">IDR ${numberWithSeparators(normal)}</span><span class="disc-badge">-${percent}%</span>`:''}
+                <div class="price">IDR ${numberWithSeparators(final)}</div>
               </div>
-              <ul class=\"list\">${(pkg.features||[]).map(f=>`<li>${escapeHtml(f)}</li>`).join('')}</ul>
-              <div>${(pkg.tags||[]).map(t=>`<span class=\"badge\">${escapeHtml(t)}</span>`).join('')}</div>
-              <div class=\"cta\">
-                <a class=\"btn\" href=\"./order/${pkg.id}/\">Order</a>
-                <button class=\"btn detail flip-btn\" type=\"button\">Detail</button>
+              <ul class="list">${(pkg.features||[]).map(f=>`<li>${escapeHtml(f)}</li>`).join('')}</ul>
+              <div>${(pkg.tags||[]).map(t=>`<span class="badge">${escapeHtml(t)}</span>`).join('')}</div>
+              <div class="cta">
+                <a class="btn" href="./order/${pkg.id}/">Order</a>
+                <button class="btn detail flip-btn" type="button">Detail</button>
               </div>
             </div>
-            <div class=\"card-face card-back\" style=\"display:none\">
+            <div class="card-face card-back">
               <h4>Kebijakan</h4>
-              <ul>${(pkg.policies||[\"Tidak ada kebijakan tambahan\"]).map(p=>`<li>${escapeHtml(p)}</li>`).join('')}</ul>
-              <button class=\"back-btn\">← Kembali</button>
+              <ul>${(pkg.policies||["Tidak ada kebijakan tambahan"]).map(p=>`<li>${escapeHtml(p)}</li>`).join('')}</ul>
+              <button class="back-btn">← Kembali</button>
             </div>
           </div>`;
 
@@ -185,37 +204,20 @@
         const front=wrapper.querySelector('.card-front');
         const back=wrapper.querySelector('.card-back');
 
-        const animateHeightTo = (targetEl) => {
-          const startH = card.offsetHeight;
-          card.style.height = startH + 'px';
-          const prevDisplay = targetEl.style.display;
-          targetEl.style.display='block';
-          const endH = targetEl.offsetHeight;
-          requestAnimationFrame(()=>{ card.style.height = endH + 'px'; });
-          setTimeout(()=>{ card.style.height=''; }, HEIGHT_DURATION);
-          targetEl.style.display = prevDisplay;
-        };
-
         const flip = (toBack) => {
-          const hideEl = toBack ? front : back;
           const showEl = toBack ? back : front;
+          const hideEl = toBack ? front : back;
 
-          // Phase A: scale out yang aktif
+          // animasi keluar
           hideEl.style.transform = 'scaleX(0)';
           hideEl.style.opacity = '0';
 
-          // Siapkan target untuk diukur & nanti di-scale in
-          showEl.style.display = 'block';
-          showEl.style.transform = 'scaleX(0)';
-          showEl.style.opacity = '0';
-
-          // Layout ikut geser halus ke tinggi target
-          animateHeightTo(showEl);
-
-          // Setelah fase A selesai, tukar visibilitas lalu scale in target
           setTimeout(()=>{
-            hideEl.style.display='none';
-            void showEl.offsetWidth; // force reflow sebelum scale in
+            card.classList.toggle('show-back', toBack);
+            // reset transform supaya bisa scale in
+            showEl.style.transform = 'scaleX(0)';
+            showEl.style.opacity = '0';
+            void showEl.offsetWidth;
             showEl.style.transform = 'scaleX(1)';
             showEl.style.opacity = '1';
           }, FLIP_DURATION);
@@ -228,7 +230,7 @@
       });
     }
 
-    function checkRekom(promo,id)(promo,id){
+    function checkRekom(promo,id){
       if(!promo||!promo.recommended) return false;
       if(Array.isArray(promo.recommended)) return promo.recommended.map(String).includes(String(id));
       return String(promo.recommended)===String(id);
