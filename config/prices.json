@@ -27,7 +27,7 @@
   ],
   "tags": ["Random", "Eksperimen"],
   "policies": [
-    "Editor berhak berhenti di tengah proses editing",
+    "Editor berhak berhenti di tengah proses editing, jika dirasa jenuh",
     "Edit sesuai mood editor",
     "Musik bebas terserah editor",
     "Tidak ada revisi",
@@ -141,6 +141,7 @@
     }
   ]
 }
+
 
 
 
