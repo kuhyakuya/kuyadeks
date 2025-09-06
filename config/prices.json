@@ -105,35 +105,10 @@
         "Revisi gratis jika kesalahan teknis dari editor (glitch, typo, salah potong scene).",
         "Komunikasi & revisi dicatat via chat. Jam kerja: 09:00–22:00."
       ]
-    },
-    {
-  "id": 4,
-  "name": "Paket Premium",
-  "price": 300000,
-  "revisions": 5,
-  "durationText": "1–10 menit",
-  "overRatePerMin": 50000,
-  "leadTime": "5–7 hari",
-  "workloadPerMin": 4,
-  "features": [
-    "Full cinematic editing",
-    "Advanced motion graphics",
-    "Sound design",
-    "Color grading professional",
-    "Gratis Revisi 5x"
-  ],
-  "tags": ["Film pendek", "Iklan TV", "Video Musik Premium"],
-  "policies": [
-    "Revisi lebih dari 5x dikenakan biaya tambahan, sebesar IDR 30.000/revisi.",
-    "Revisi gratis hanya jika kesalahan teknis dari editor.",
-    "Brief tidak boleh berubah setelah proyek dimulai.",
-    "DP wajib 50% untuk paket ini.",
-    "Pembayaran melalui transfer via QEIS."
+    }
   ]
 }
 
-  ]
-}
 
 
 
