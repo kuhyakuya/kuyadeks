@@ -120,16 +120,18 @@
   "workloadPerMin": 0,
   "disabled": true, 
   "features": [
+    "Kualitas menyesuaikan mood editor",
+    "Semua aspek ditentukan oleh editor"
+  ],
+  "tags": ["Random", "Eksperimen"],
+  "policies": [
+    "Editor berhak berhenti di tengah proses editing",
     "Edit sesuai mood editor",
     "Musik bebas terserah editor",
     "Tidak ada revisi",
     "Gratis (harga 0)",
     "Boleh dipakai untuk portofolio editor",
-    "Konsep terserah editor"
-  ],
-  "tags": ["Random", "Eksperimen"],
-  "policies": [
-    "Editor berhak berhenti di tengah proses editing",
+    "Konsep terserah editor",
     "Tidak ada deadline",
     "Editor berhak menolak projek jika file RAW dinilai tidak berkualitas",
     "Klien tidak berhak complain atas hasil editing",
@@ -139,6 +141,7 @@
 }
   ]
 }
+
 
 
 
