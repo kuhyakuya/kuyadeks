@@ -158,26 +158,26 @@
         const wrapper=document.createElement('div');
         wrapper.className='card-wrapper';
         wrapper.innerHTML=`
-          <div class="card${isRekom?' rekom':''}">
-            <div class="card-face card-front">
-              ${isRekom?'<div class="ribbon">Rekomendasi</div>':''}
+          <div class=\"card${isRekom?' rekom':''}\">
+            <div class=\"card-face card-front\">
+              ${isRekom?'<div class=\"ribbon\">Rekomendasi</div>':''}
               <h3>${escapeHtml(pkg.name)}</h3>
-              <div class="meta">Revisi: ${pkg.revisions} • Durasi: ${pkg.durationText} • Waktu: ${pkg.leadTime}</div>
-              <div class="price-box">
-                ${percent>0?`<span class="old-price">IDR ${numberWithSeparators(normal)}</span><span class="disc-badge">-${percent}%</span>`:''}
-                <div class="price">IDR ${numberWithSeparators(final)}</div>
+              <div class=\"meta\">Revisi: ${pkg.revisions} • Durasi: ${pkg.durationText} • Waktu: ${pkg.leadTime}</div>
+              <div class=\"price-box\">
+                ${percent>0?`<span class=\"old-price\">IDR ${numberWithSeparators(normal)}</span><span class=\"disc-badge\">-${percent}%</span>`:''}
+                <div class=\"price\">IDR ${numberWithSeparators(final)}</div>
               </div>
-              <ul class="list">${(pkg.features||[]).map(f=>`<li>${escapeHtml(f)}</li>`).join('')}</ul>
-              <div>${(pkg.tags||[]).map(t=>`<span class="badge">${escapeHtml(t)}</span>`).join('')}</div>
-              <div class="cta">
-                <a class="btn" href="./order/${pkg.id}/">Order</a>
-                <button class="btn detail flip-btn" type="button">Detail</button>
+              <ul class=\"list\">${(pkg.features||[]).map(f=>`<li>${escapeHtml(f)}</li>`).join('')}</ul>
+              <div>${(pkg.tags||[]).map(t=>`<span class=\"badge\">${escapeHtml(t)}</span>`).join('')}</div>
+              <div class=\"cta\">
+                <a class=\"btn\" href=\"./order/${pkg.id}/\">Order</a>
+                <button class=\"btn detail flip-btn\" type=\"button\">Detail</button>
               </div>
             </div>
-            <div class="card-face card-back">
+            <div class=\"card-face card-back\" style=\"display:none\">
               <h4>Kebijakan</h4>
-              <ul>${(pkg.policies||["Tidak ada kebijakan tambahan"]).map(p=>`<li>${escapeHtml(p)}</li>`).join('')}</ul>
-              <button class="back-btn">← Kembali</button>
+              <ul>${(pkg.policies||[\"Tidak ada kebijakan tambahan\"]).map(p=>`<li>${escapeHtml(p)}</li>`).join('')}</ul>
+              <button class=\"back-btn\">← Kembali</button>
             </div>
           </div>`;
 
@@ -185,30 +185,50 @@
         const front=wrapper.querySelector('.card-front');
         const back=wrapper.querySelector('.card-back');
 
-        const flipToBack=()=>{
-          card.classList.add('flipping');
-          setTimeout(()=>{
-            card.classList.add('show-back');
-            card.classList.remove('flipping');
-          },300);
+        const animateHeightTo = (targetEl) => {
+          const startH = card.offsetHeight;
+          card.style.height = startH + 'px';
+          const prevDisplay = targetEl.style.display;
+          targetEl.style.display='block';
+          const endH = targetEl.offsetHeight;
+          requestAnimationFrame(()=>{ card.style.height = endH + 'px'; });
+          setTimeout(()=>{ card.style.height=''; }, HEIGHT_DURATION);
+          targetEl.style.display = prevDisplay;
         };
 
-        const flipToFront=()=>{
-          card.classList.add('flipping');
+        const flip = (toBack) => {
+          const hideEl = toBack ? front : back;
+          const showEl = toBack ? back : front;
+
+          // Phase A: scale out yang aktif
+          hideEl.style.transform = 'scaleX(0)';
+          hideEl.style.opacity = '0';
+
+          // Siapkan target untuk diukur & nanti di-scale in
+          showEl.style.display = 'block';
+          showEl.style.transform = 'scaleX(0)';
+          showEl.style.opacity = '0';
+
+          // Layout ikut geser halus ke tinggi target
+          animateHeightTo(showEl);
+
+          // Setelah fase A selesai, tukar visibilitas lalu scale in target
           setTimeout(()=>{
-            card.classList.remove('show-back');
-            card.classList.remove('flipping');
-          },300);
+            hideEl.style.display='none';
+            void showEl.offsetWidth; // force reflow sebelum scale in
+            showEl.style.transform = 'scaleX(1)';
+            showEl.style.opacity = '1';
+          }, FLIP_DURATION);
         };
 
-        wrapper.querySelector('.flip-btn').addEventListener('click',flipToBack);
-        wrapper.querySelector('.back-btn').addEventListener('click',flipToFront);
+        wrapper.querySelector('.flip-btn').addEventListener('click',()=>flip(true));
+        wrapper.querySelector('.back-btn').addEventListener('click',()=>flip(false));
 
         container.appendChild(wrapper);
       });
     }
 
-    function checkRekom(promo,id){
+    function checkRekom(promo,id)(promo,id){
       if(!promo||!promo.recommended) return false;
       if(Array.isArray(promo.recommended)) return promo.recommended.map(String).includes(String(id));
       return String(promo.recommended)===String(id);
