@@ -15,7 +15,6 @@
       --gold:#FFD54F;
       --detail:#555;
       --flip-duration:250ms;
-      --height-duration:300ms;
     }
     *{box-sizing:border-box;margin:0;padding:0}
     body{
@@ -37,14 +36,11 @@
 
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
 
-    .card-wrapper { position: relative; z-index: 1; }
-    .card {
-      position: relative;
-      width: 100%;
-      border-radius: 12px;
-      background: var(--card);
+    .card{
+      background:var(--card);
+      border-radius:12px;
       overflow:hidden;
-      transition: height var(--height-duration) ease;
+      transition:height 0.3s ease;
     }
 
     .card-face{
@@ -52,31 +48,10 @@
       box-shadow:0 6px 18px rgba(0,0,0,0.6);
       border:2px solid rgba(255,255,255,0.05);
       border-radius:12px;
+      transform-origin:center center;
+      transition:transform var(--flip-duration) ease, opacity var(--flip-duration) ease;
     }
-
-    .card-front, .card-back {
-      transition: transform var(--flip-duration) ease, opacity var(--flip-duration) ease;
-      transform-origin: center center;
-    }
-
-    .card-back {
-      visibility:hidden;
-      opacity:0;
-      transform:scaleX(0);
-      position:relative;
-    }
-    .card.show-back .card-front {
-      visibility:hidden;
-      opacity:0;
-      transform:scaleX(0);
-      position:absolute;
-      top:0;left:0;width:100%;
-    }
-    .card.show-back .card-back {
-      visibility:visible;
-      opacity:1;
-      transform:scaleX(1);
-    }
+    .card-face.hide{display:none}
 
     .card-front h3{font-size:16px;margin-bottom:4px}
     .price-box{margin:10px 0}
@@ -155,8 +130,7 @@
       },500);
     },5000);
 
-    const FLIP_DURATION=250;
-    const HEIGHT_DURATION=300;
+    const FLIP_DURATION = 250;
 
     async function loadPackages(){
       try{
@@ -193,7 +167,7 @@
                 <button class="btn detail flip-btn" type="button">Detail</button>
               </div>
             </div>
-            <div class="card-face card-back">
+            <div class="card-face card-back hide">
               <h4>Kebijakan</h4>
               <ul>${(pkg.policies||["Tidak ada kebijakan tambahan"]).map(p=>`<li>${escapeHtml(p)}</li>`).join('')}</ul>
               <button class="back-btn">← Kembali</button>
@@ -204,27 +178,33 @@
         const front=wrapper.querySelector('.card-front');
         const back=wrapper.querySelector('.card-back');
 
-        const flip = (toBack) => {
-          const showEl = toBack ? back : front;
-          const hideEl = toBack ? front : back;
+        function flip(fromEl,toEl){
+          fromEl.style.transform='scaleX(1)';
+          toEl.style.transform='scaleX(0)';
+          fromEl.style.opacity=1;
+          toEl.style.opacity=0;
 
-          // animasi keluar
-          hideEl.style.transform = 'scaleX(0)';
-          hideEl.style.opacity = '0';
+          fromEl.style.transition=`transform ${FLIP_DURATION}ms ease, opacity ${FLIP_DURATION}ms ease`;
+          toEl.style.transition=`transform ${FLIP_DURATION}ms ease, opacity ${FLIP_DURATION}ms ease`;
+
+          fromEl.style.transform='scaleX(0)';
+          fromEl.style.opacity=0;
 
           setTimeout(()=>{
-            card.classList.toggle('show-back', toBack);
-            // reset transform supaya bisa scale in
-            showEl.style.transform = 'scaleX(0)';
-            showEl.style.opacity = '0';
-            void showEl.offsetWidth;
-            showEl.style.transform = 'scaleX(1)';
-            showEl.style.opacity = '1';
-          }, FLIP_DURATION);
-        };
+            fromEl.classList.add('hide');
+            toEl.classList.remove('hide');
+            toEl.style.transform='scaleX(0)';
+            toEl.style.opacity=0;
 
-        wrapper.querySelector('.flip-btn').addEventListener('click',()=>flip(true));
-        wrapper.querySelector('.back-btn').addEventListener('click',()=>flip(false));
+            requestAnimationFrame(()=>{
+              toEl.style.transform='scaleX(1)';
+              toEl.style.opacity=1;
+            });
+          }, FLIP_DURATION);
+        }
+
+        wrapper.querySelector('.flip-btn').addEventListener('click',()=>flip(front,back));
+        wrapper.querySelector('.back-btn').addEventListener('click',()=>flip(back,front));
 
         container.appendChild(wrapper);
       });
@@ -240,81 +220,6 @@
     function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]))}
 
     loadPackages();
-  </script>
-  <script>
-    // --- Override flip behaviour with scaleX two-phase + height easing ---
-    (function(){
-      const FLIP_DURATION = 250; // ms
-      const HEIGHT_DURATION = 300; // ms
-
-      function initCards(){
-        document.querySelectorAll('.card').forEach(card=>{
-          const front = card.querySelector('.card-front');
-          const back  = card.querySelector('.card-back');
-          if(!front || !back) return;
-
-          // Ensure clean initial state
-          front.style.display = 'block';
-          front.style.transform = 'scaleX(1)';
-          front.style.opacity = '1';
-          back.style.display = 'none';
-          back.style.transform = 'scaleX(0)';
-          back.style.opacity = '0';
-          card.style.height = front.offsetHeight + 'px';
-
-          // Replace existing buttons to remove old listeners
-          const flipBtn = card.querySelector('.flip-btn');
-          const backBtn = card.querySelector('.back-btn');
-          if(flipBtn){ const n=flipBtn.cloneNode(true); flipBtn.replaceWith(n); }
-          if(backBtn){ const n=backBtn.cloneNode(true); backBtn.replaceWith(n); }
-
-          const newFlipBtn = card.querySelector('.flip-btn');
-          const newBackBtn = card.querySelector('.back-btn');
-
-          const animateHeight = (target)=>{
-            card.style.transition = `height ${HEIGHT_DURATION}ms ease`;
-            void card.offsetHeight; // reflow
-            card.style.height = target + 'px';
-            const onEnd = ()=>{ card.removeEventListener('transitionend', onEnd); card.style.transition=''; card.style.height='auto'; };
-            card.addEventListener('transitionend', onEnd);
-          };
-
-          const flip = (toBack)=>{
-            const fromEl = toBack ? front : back;
-            const toEl   = toBack ? back  : front;
-
-            // Phase 1: hide current face with scaleX
-            fromEl.style.transition = `transform ${FLIP_DURATION}ms ease, opacity ${FLIP_DURATION}ms ease`;
-            fromEl.style.transform = 'scaleX(0)';
-            fromEl.style.opacity = '0';
-
-            setTimeout(()=>{
-              // Swap faces
-              fromEl.style.display = 'none';
-              toEl.style.display = 'block';
-              toEl.style.transform = 'scaleX(0)';
-              toEl.style.opacity = '0';
-
-              // Height to match new face
-              animateHeight(toEl.offsetHeight);
-
-              // Phase 2: show target face
-              toEl.style.transition = `transform ${FLIP_DURATION}ms ease, opacity ${FLIP_DURATION}ms ease`;
-              void toEl.offsetWidth;
-              toEl.style.transform = 'scaleX(1)';
-              toEl.style.opacity = '1';
-            }, FLIP_DURATION);
-          };
-
-          if(newFlipBtn) newFlipBtn.addEventListener('click', ()=> flip(true));
-          if(newBackBtn) newBackBtn.addEventListener('click', ()=> flip(false));
-        });
-      }
-
-      // Run after initial render; also observe for future re-renders if any
-      const start = ()=> setTimeout(initCards, 0);
-      if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', start); else start();
-    })();
   </script>
 </body>
 </html>
