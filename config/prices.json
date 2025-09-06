@@ -20,7 +20,7 @@
   "overRatePerMin": 0,
   "leadTime": "Tidak ada deadline",
   "workloadPerMin": 1095,
-  "disabled": false, 
+  "disabled": true, 
   "features": [
     "Kualitas menyesuaikan mood editor",
     "Semua aspek ditentukan oleh editor"
@@ -141,6 +141,7 @@
     }
   ]
 }
+
 
 
 
