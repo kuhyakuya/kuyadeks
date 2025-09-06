@@ -12,6 +12,36 @@
   },
   "packages": [
     {
+  "id": 4,
+  "name": "Paket Gabut",
+  "price": 0,
+  "revisions": 0,
+  "durationText": "Terserah editor",
+  "overRatePerMin": 0,
+  "leadTime": "Tidak ada deadline",
+  "workloadPerMin": 0,
+  "disabled": true, 
+  "features": [
+    "Kualitas menyesuaikan mood editor",
+    "Semua aspek ditentukan oleh editor"
+  ],
+  "tags": ["Random", "Eksperimen"],
+  "policies": [
+    "Editor berhak berhenti di tengah proses editing",
+    "Edit sesuai mood editor",
+    "Musik bebas terserah editor",
+    "Tidak ada revisi",
+    "Gratis (harga 0)",
+    "Boleh dipakai untuk portofolio editor",
+    "Konsep terserah editor",
+    "Tidak ada deadline",
+    "Editor berhak menolak projek jika file RAW dinilai tidak berkualitas",
+    "Klien tidak berhak complain atas hasil editing",
+    "Copyright dipegang editor",
+    "Klien boleh memberi saran, tapi tidak mengikat editor"
+  ]
+},
+    {
       "id": 1,
       "name": "Paket InstaClip",
       "price": 15000,
@@ -108,39 +138,10 @@
         "Revisi gratis jika kesalahan teknis dari editor (glitch, typo, salah potong scene).",
         "Komunikasi & revisi dicatat via chat. Jam kerja: 09:00–22:00."
       ]
-    },
-    {
-  "id": 4,
-  "name": "Paket Gabut",
-  "price": 0,
-  "revisions": 0,
-  "durationText": "Terserah editor",
-  "overRatePerMin": 0,
-  "leadTime": "Tidak ada deadline",
-  "workloadPerMin": 0,
-  "disabled": true, 
-  "features": [
-    "Kualitas menyesuaikan mood editor",
-    "Semua aspek ditentukan oleh editor"
-  ],
-  "tags": ["Random", "Eksperimen"],
-  "policies": [
-    "Editor berhak berhenti di tengah proses editing",
-    "Edit sesuai mood editor",
-    "Musik bebas terserah editor",
-    "Tidak ada revisi",
-    "Gratis (harga 0)",
-    "Boleh dipakai untuk portofolio editor",
-    "Konsep terserah editor",
-    "Tidak ada deadline",
-    "Editor berhak menolak projek jika file RAW dinilai tidak berkualitas",
-    "Klien tidak berhak complain atas hasil editing",
-    "Copyright dipegang editor",
-    "Klien boleh memberi saran, tapi tidak mengikat editor"
+    }
   ]
 }
-  ]
-}
+
 
 
 
