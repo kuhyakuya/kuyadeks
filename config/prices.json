@@ -19,7 +19,7 @@
   "durationText": "Terserah editor",
   "overRatePerMin": 0,
   "leadTime": "Tidak ada deadline",
-  "workloadPerMin": 8784,
+  "workloadPerMin": 1095,
   "disabled": false, 
   "features": [
     "Kualitas menyesuaikan mood editor",
@@ -141,6 +141,7 @@
     }
   ]
 }
+
 
 
 
