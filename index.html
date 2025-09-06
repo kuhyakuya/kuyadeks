@@ -113,7 +113,7 @@
               <div>${(pkg.tags||[]).map(t=>`<span class="badge">${escapeHtml(t)}</span>`).join('')}</div>
               <div class="cta">
                 ${pkg.disabled
-                  ? `<a class="btn" disabled>Order (Nonaktif)</a>`
+                  ? `<a class="btn" disabled>Pause</a>`
                   : `<a class="btn" href="./order.html?id=${pkg.id}">Order</a>`}
                 <button class="btn detail flip-btn" type="button">Detail</button>
               </div>
