@@ -145,12 +145,27 @@
       }
     })();
 
+    function addDays(date, days){ const d=new Date(date); d.setDate(d.getDate()+days); return d; }
+    function nextDayStart(){ const d=new Date(); d.setDate(d.getDate()+1); d.setHours(0,0,0,0); return d; }
+
     function update(){
       if(!pkg) return;
       const durasi=parseInt(document.getElementById("durasi").value||0,10);
       let days=parseInt(document.getElementById("deadline").value||0,10);
       const note=document.getElementById("note").value.trim();
       const ref=document.getElementById("ref").value.trim();
+
+      // Validasi catatan minimal 80 karakter
+      const noteErr=document.getElementById("noteErr");
+      const noteOK=note.length>=80;
+      noteErr.style.display=noteOK?"none":"block";
+
+      // Validasi URL
+      const refInput=document.getElementById("ref");
+      const refErr=document.getElementById("refErr");
+      let refOK=true;
+      try{ if(ref && !new URL(ref)){ refOK=false; } }catch{ if(ref){ refOK=false; } }
+      if(!refOK){ refInput.classList.add("invalid"); refErr.style.display='block'; } else { refInput.classList.remove("invalid"); refErr.style.display='none'; }
 
       const calc=Pricing.calcTotal(pkg,cfg,promo,durasi||0,days||0);
       document.getElementById("sumBase").textContent=Pricing.fmtIDR(calc.baseFinal);
@@ -159,10 +174,12 @@
       document.getElementById("sumBuffer").textContent=`+${calc.bufPerc}% = ${Pricing.fmtIDR(calc.bufVal)}`;
       document.getElementById("sumTotal").textContent=Pricing.fmtIDR(calc.total);
 
+      document.getElementById("eta").textContent = days>0 ? addDays(nextDayStart(),days-1).toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}) : '-';
+
       const code=`ORD-${durasi}m-${days}d-${calc.total}-${randCode(6)}`;
       document.getElementById("orderCode").textContent=code;
 
-      const formOK=durasi>0 && days>0 && note.length>=80;
+      const formOK=durasi>0 && days>0 && noteOK && refOK;
       document.getElementById("btnOrder").disabled=!formOK;
       document.getElementById("btnOrder").dataset.calc=JSON.stringify(calc);
       document.getElementById("btnOrder").dataset.note=note;
@@ -174,30 +191,37 @@
 
     function updateCounter(){
       const note=document.getElementById("note");
-      document.getElementById("noteCounter").textContent=`${note.value.length} / 1200`;
+      const counter=document.getElementById("noteCounter");
+      const warn=document.getElementById("noteWarn");
+      counter.textContent=`${note.value.length} / 1200`;
+      warn.style.display = note.value.length >= 1080 ? 'block' : 'none';
     }
 
     function onOrder(){
-      const btn=document.getElementById("btnOrder");
+      const btn=document.getElementById('btnOrder');
       const calc=JSON.parse(btn.dataset.calc);
+      const phone=String(cfg.whatsapp);
       const msg=[
         `*Paket:* ${pkg.name}`,
         `*Durasi:* ${btn.dataset.durasi} menit`,
-        `*Deadline:* ${btn.dataset.days} hari`,
-        "",
-        "*Ringkasan:*",
-        `> Base: ${Pricing.fmtIDR(calc.baseFinal)}`,
+        `*Deadline:* ${btn.dataset.days} hari (mulai sesuai jam kerja, setelah file RAW diterima)`,
+        '',
+        `*Ringkasan:*`,
+        `> Harga normal: ${Pricing.fmtIDR(calc.normal)}`,
+        calc.discountPercent>0?`> Diskon ${calc.discountPercent}%: -${Pricing.fmtIDR(calc.normal-calc.baseFinal)}`:null,
+        `> Base price: ${Pricing.fmtIDR(calc.baseFinal)}`,
         `> Overtime: ${calc.overMin} mnt × ${Pricing.fmtIDR(calc.overRate)} = ${Pricing.fmtIDR(calc.overCost)}`,
-        `> Deadline surcharge: ${calc.surPerc}% = ${Pricing.fmtIDR(calc.surchargeVal)}`,
-        `> Buffer fee: ${calc.bufPerc}% = ${Pricing.fmtIDR(calc.bufVal)}`,
+        `> Deadline surcharge: +${calc.surPerc}% = ${Pricing.fmtIDR(calc.surchargeVal)}`,
+        `> Buffer fee: +${calc.bufPerc}% = ${Pricing.fmtIDR(calc.bufVal)}`,
+        `> ${Pricing.fmtIDR(calc.baseFinal)} + ${Pricing.fmtIDR(calc.overCost)} + ${Pricing.fmtIDR(calc.surchargeVal)} + ${Pricing.fmtIDR(calc.bufVal)}`,
         `> Total: *${Pricing.fmtIDR(calc.total)}*`,
-        "",
+        '',
         btn.dataset.ref?`*Referensi:* ${btn.dataset.ref}`:null,
         `*Brief:* ${btn.dataset.note}`,
         `*Order Code:* ${btn.dataset.code}`
-      ].filter(Boolean).join("\n");
+      ].filter(Boolean).join('\n');
 
-      const url="https://wa.me/"+cfg.whatsapp+"?text="+encodeURIComponent(msg);
+      const url="https://wa.me/"+phone+"?text="+encodeURIComponent(msg);
       window.location.href=url;
     }
   </script>
