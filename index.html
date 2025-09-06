@@ -35,38 +35,33 @@
 
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
 
-   .card-wrapper {
-  perspective: none;
-  position: relative;
-  z-index: 1;
-}
-.card {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transform-style: preserve-3d; /* masih ada, tapi ga berpengaruh besar tanpa perspective */
-  transition: transform 0.6s;
-  border-radius: 12px;
-  background: var(--card);
-}
-
-    .card.flip{transform:rotateY(180deg)}
+    .card-wrapper { position: relative; z-index: 1; }
+    .card {
+      position: relative;
+      width: 100%;
+      border-radius: 12px;
+      background: var(--card);
+      overflow:hidden;
+    }
 
     .card-face{
-      background:var(--card);
-      border-radius:12px;
       padding:18px;
       box-shadow:0 6px 18px rgba(0,0,0,0.6);
       border:2px solid rgba(255,255,255,0.05);
-      position:absolute;
-      width:100%;
-      backface-visibility:hidden;
-      top:0;left:0;
-      min-height:300px;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
+      border-radius:12px;
     }
+
+    .card-front, .card-back {
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      transform-origin: center center;
+    }
+
+    .card-back { display:none; }
+    .card.flipping .card-front { transform:scaleX(0); opacity:0; }
+    .card.flipping .card-back { display:block; transform:scaleX(0); opacity:0; }
+    .card.show-back .card-back { display:block; transform:scaleX(1); opacity:1; }
+    .card.show-back .card-front { display:none; }
+
     .card-front h3{font-size:16px;margin-bottom:4px}
     .price-box{margin:10px 0}
     .old-price{font-size:12px;color:var(--muted);text-decoration:line-through;display:inline-block;margin-right:6px}
@@ -76,11 +71,10 @@
     .list{margin:12px 0 16px;padding-left:18px;color:var(--muted);font-size:14px}
     .badge{display:inline-block;background:var(--glass);padding:4px 10px;border-radius:999px;font-size:12px;color:var(--muted);margin-right:6px;margin-top:4px}
 
-    .cta{text-align:right;margin-top:16px} /* Tambah jarak biar tombol ga mentok */
+    .cta{text-align:right;margin-top:16px}
     .btn{background:var(--accent);color:white;padding:8px 12px;border-radius:10px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block;font-size:13px;border:none}
     .btn.detail{background:var(--detail);color:#fff}
 
-    .card-back{transform:rotateY(180deg);text-align:left;font-size:13px;line-height:1.5}
     .card-back h4{margin-bottom:10px;font-size:15px;color:var(--gold)}
     .card-back ul{padding-left:18px;color:var(--muted)}
 
@@ -188,8 +182,27 @@
           </div>`;
 
         const card=wrapper.querySelector('.card');
-        wrapper.querySelector('.flip-btn').addEventListener('click',()=>card.classList.add('flip'));
-        wrapper.querySelector('.back-btn').addEventListener('click',()=>card.classList.remove('flip'));
+        const front=wrapper.querySelector('.card-front');
+        const back=wrapper.querySelector('.card-back');
+
+        const flipToBack=()=>{
+          card.classList.add('flipping');
+          setTimeout(()=>{
+            card.classList.add('show-back');
+            card.classList.remove('flipping');
+          },300);
+        };
+
+        const flipToFront=()=>{
+          card.classList.add('flipping');
+          setTimeout(()=>{
+            card.classList.remove('show-back');
+            card.classList.remove('flipping');
+          },300);
+        };
+
+        wrapper.querySelector('.flip-btn').addEventListener('click',flipToBack);
+        wrapper.querySelector('.back-btn').addEventListener('click',flipToFront);
 
         container.appendChild(wrapper);
       });
