@@ -241,5 +241,80 @@
 
     loadPackages();
   </script>
+  <script>
+    // --- Override flip behaviour with scaleX two-phase + height easing ---
+    (function(){
+      const FLIP_DURATION = 250; // ms
+      const HEIGHT_DURATION = 300; // ms
+
+      function initCards(){
+        document.querySelectorAll('.card').forEach(card=>{
+          const front = card.querySelector('.card-front');
+          const back  = card.querySelector('.card-back');
+          if(!front || !back) return;
+
+          // Ensure clean initial state
+          front.style.display = 'block';
+          front.style.transform = 'scaleX(1)';
+          front.style.opacity = '1';
+          back.style.display = 'none';
+          back.style.transform = 'scaleX(0)';
+          back.style.opacity = '0';
+          card.style.height = front.offsetHeight + 'px';
+
+          // Replace existing buttons to remove old listeners
+          const flipBtn = card.querySelector('.flip-btn');
+          const backBtn = card.querySelector('.back-btn');
+          if(flipBtn){ const n=flipBtn.cloneNode(true); flipBtn.replaceWith(n); }
+          if(backBtn){ const n=backBtn.cloneNode(true); backBtn.replaceWith(n); }
+
+          const newFlipBtn = card.querySelector('.flip-btn');
+          const newBackBtn = card.querySelector('.back-btn');
+
+          const animateHeight = (target)=>{
+            card.style.transition = `height ${HEIGHT_DURATION}ms ease`;
+            void card.offsetHeight; // reflow
+            card.style.height = target + 'px';
+            const onEnd = ()=>{ card.removeEventListener('transitionend', onEnd); card.style.transition=''; card.style.height='auto'; };
+            card.addEventListener('transitionend', onEnd);
+          };
+
+          const flip = (toBack)=>{
+            const fromEl = toBack ? front : back;
+            const toEl   = toBack ? back  : front;
+
+            // Phase 1: hide current face with scaleX
+            fromEl.style.transition = `transform ${FLIP_DURATION}ms ease, opacity ${FLIP_DURATION}ms ease`;
+            fromEl.style.transform = 'scaleX(0)';
+            fromEl.style.opacity = '0';
+
+            setTimeout(()=>{
+              // Swap faces
+              fromEl.style.display = 'none';
+              toEl.style.display = 'block';
+              toEl.style.transform = 'scaleX(0)';
+              toEl.style.opacity = '0';
+
+              // Height to match new face
+              animateHeight(toEl.offsetHeight);
+
+              // Phase 2: show target face
+              toEl.style.transition = `transform ${FLIP_DURATION}ms ease, opacity ${FLIP_DURATION}ms ease`;
+              void toEl.offsetWidth;
+              toEl.style.transform = 'scaleX(1)';
+              toEl.style.opacity = '1';
+            }, FLIP_DURATION);
+          };
+
+          if(newFlipBtn) newFlipBtn.addEventListener('click', ()=> flip(true));
+          if(newBackBtn) newBackBtn.addEventListener('click', ()=> flip(false));
+        });
+      }
+
+      // Run after initial render; also observe for future re-renders if any
+      const start = ()=> setTimeout(initCards, 0);
+      if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', start); else start();
+    })();
+  </script>
 </body>
 </html>
